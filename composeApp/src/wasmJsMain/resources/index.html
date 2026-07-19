@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ari Sastro Wardoyo Supiatma · portfolio.kt</title>
+    <meta name="description" content="Ship log of Ari SWS — Android Engineer. Kotlin, Compose, Clean Architecture.">
+    <meta name="color-scheme" content="light dark">
+    <style>
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            background: #0B0D12;
+            overflow: hidden;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        }
+        #warning {
+            position: absolute;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            max-width: 640px;
+            z-index: 100;
+            background: #141820;
+            color: #E8EAF0;
+            border: 1px solid #262B36;
+            border-radius: 12px;
+            padding: 20px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<div id="warning">
+    Browser needs modern Wasm GC support.
+    See <a href="https://kotl.in/wasm-help" style="color:#3DDC84">kotl.in/wasm-help</a>.
+</div>
+<script type="application/javascript">
+    const unhandledError = (event, error) => {
+        if (error instanceof WebAssembly.CompileError) {
+            document.getElementById("warning").style.display = "block";
+        }
+    }
+    addEventListener("error", (event) => unhandledError(event, event.error));
+    addEventListener("unhandledrejection", (event) => unhandledError(event, event.reason));
+</script>
+<script src="portfolio.js"></script>
+</body>
+</html>
