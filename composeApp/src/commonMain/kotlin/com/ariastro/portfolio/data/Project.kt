@@ -3,10 +3,24 @@ package com.ariastro.portfolio.data
 import androidx.compose.ui.graphics.Color
 import com.ariastro.portfolio.resources.Res
 import com.ariastro.portfolio.resources.project_myxl
+import com.ariastro.portfolio.resources.project_myxl_1
+import com.ariastro.portfolio.resources.project_myxl_2
 import com.ariastro.portfolio.resources.project_schoolryde
+import com.ariastro.portfolio.resources.project_schoolryde_1
+import com.ariastro.portfolio.resources.project_schoolryde_2
+import com.ariastro.portfolio.resources.project_schoolryde_3
+import com.ariastro.portfolio.resources.project_schoolryde_4
 import com.ariastro.portfolio.resources.project_superagree
+import com.ariastro.portfolio.resources.project_superagree_1
+import com.ariastro.portfolio.resources.project_superagree_2
 import com.ariastro.portfolio.resources.project_tagtag
+import com.ariastro.portfolio.resources.project_tagtag_1
+import com.ariastro.portfolio.resources.project_tagtag_2
+import com.ariastro.portfolio.resources.project_tagtag_3
 import com.ariastro.portfolio.resources.project_trackfit
+import com.ariastro.portfolio.resources.project_trackfit_1
+import com.ariastro.portfolio.resources.project_trackfit_2
+import com.ariastro.portfolio.resources.project_trackfit_3
 import org.jetbrains.compose.resources.DrawableResource
 
 data class Project(
@@ -23,7 +37,7 @@ data class Project(
     val linkType: LinkType,
     val stack: List<String>,
     val accent: Color,
-    val screenshot: DrawableResource,
+    val screenshots: List<DrawableResource>,
     val status: String = "SHIPPED",
 )
 
@@ -103,7 +117,10 @@ object PortfolioData {
                 "Google Maps", "Modularization", "Clean Architecture",
             ),
             accent = Color(0xFF2563EB),
-            screenshot = Res.drawable.project_myxl,
+            screenshots = listOf(
+                Res.drawable.project_myxl_1,
+                Res.drawable.project_myxl_2,
+            ),
         ),
         Project(
             id = "schoolryde",
@@ -130,7 +147,12 @@ object PortfolioData {
                 "Stripe", "Room", "Firebase", "DataStore",
             ),
             accent = Color(0xFF0D9488),
-            screenshot = Res.drawable.project_schoolryde,
+            screenshots = listOf(
+                Res.drawable.project_schoolryde_1,
+                Res.drawable.project_schoolryde_2,
+                Res.drawable.project_schoolryde_3,
+                Res.drawable.project_schoolryde_4,
+            ),
         ),
         Project(
             id = "tagtag",
@@ -157,7 +179,11 @@ object PortfolioData {
                 "Firebase", "Crashlytics", "Payment Gateway",
             ),
             accent = Color(0xFF16A34A),
-            screenshot = Res.drawable.project_tagtag,
+            screenshots = listOf(
+                Res.drawable.project_tagtag_1,
+                Res.drawable.project_tagtag_2,
+                Res.drawable.project_tagtag_3,
+            ),
         ),
         Project(
             id = "superagree",
@@ -184,7 +210,10 @@ object PortfolioData {
                 "DataStore", "Dynamic Features", "Firebase",
             ),
             accent = Color(0xFF65A30D),
-            screenshot = Res.drawable.project_superagree,
+            screenshots = listOf(
+                Res.drawable.project_superagree_1,
+                Res.drawable.project_superagree_2,
+            ),
         ),
         Project(
             id = "trackfit",
@@ -211,7 +240,11 @@ object PortfolioData {
                 "Firebase", "Moshi", "Custom Calendar",
             ),
             accent = Color(0xFFDC2626),
-            screenshot = Res.drawable.project_trackfit,
+            screenshots = listOf(
+                Res.drawable.project_trackfit_1,
+                Res.drawable.project_trackfit_2,
+                Res.drawable.project_trackfit_3,
+            ),
         ),
     )
 }

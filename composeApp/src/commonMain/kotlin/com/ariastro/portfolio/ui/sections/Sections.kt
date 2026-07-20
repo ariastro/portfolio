@@ -483,26 +483,45 @@ private fun ProjectShot(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = "preview.png",
+                text = "screenshots",
                 style = MaterialTheme.typography.labelMedium,
                 color = extra.faint,
             )
             Text(
-                text = project.index,
+                text = "${project.screenshots.size} images",
                 style = MaterialTheme.typography.labelMedium,
                 color = extra.accent,
             )
         }
         Box(Modifier.fillMaxWidth().height(1.dp).background(scheme.outline))
-        Image(
-            painter = painterResource(project.screenshot),
-            contentDescription = "${project.title} preview",
-            contentScale = ContentScale.Crop,
+        
+        // Grid of screenshots
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .aspectRatio(16f / 10f)
-                .background(scheme.surface),
-        )
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            project.screenshots.chunked(2).forEach { rowScreenshots ->
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    rowScreenshots.forEach { screenshot ->
+                        Image(
+                            painter = painterResource(screenshot),
+                            contentDescription = "${project.title} screenshot",
+                            contentScale = ContentScale.Fit,
+                            modifier = Modifier
+                                .weight(1f)
+                                .aspectRatio(9f / 16f)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(scheme.surface),
+                        )
+                    }
+                }
+            }
+        }
     }
 }
 

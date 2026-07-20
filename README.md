@@ -18,6 +18,12 @@ Open the URL Gradle prints (usually `http://localhost:8080`).
 
 Output: `composeApp/build/dist/wasmJs/productionExecutable/`
 
+## Deploy to GitHub Pages
+
+1. Push to `main` branch
+2. GitHub Actions auto-deploys to `https://<username>.github.io/personal-portfolio/`
+3. Configure custom domain in Settings → Pages → Custom domain
+
 ## Stack
 
 - Kotlin Multiplatform
@@ -29,3 +35,7 @@ Output: `composeApp/build/dist/wasmJs/productionExecutable/`
 Edit project copy and links in:
 
 `composeApp/src/commonMain/kotlin/com/ariastro/portfolio/data/Project.kt`
+
+---
+
+Built with ❤️ using Compose Multiplatform.
