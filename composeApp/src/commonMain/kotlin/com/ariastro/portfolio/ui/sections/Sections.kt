@@ -4,6 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -13,12 +14,14 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -43,6 +46,7 @@ import com.ariastro.portfolio.ui.components.Shell
 import com.ariastro.portfolio.ui.components.StatusDot
 import com.ariastro.portfolio.ui.components.ThemeToggle
 import com.ariastro.portfolio.ui.theme.PortfolioTheme
+import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
@@ -276,36 +280,28 @@ fun ReadmeSection(modifier: Modifier = Modifier) {
                     color = extra.accent,
                 )
                 Spacer(Modifier.height(12.dp))
-                Text(
-                    text = PortfolioData.ABOUT,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = scheme.onBackground,
-                )
-                Spacer(Modifier.height(24.dp))
+                PortfolioData.ABOUT.split("\n\n").forEachIndexed { i, paragraph ->
+                    if (i > 0) Spacer(Modifier.height(14.dp))
+                    Text(
+                        text = paragraph,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = scheme.onBackground,
+                    )
+                }
+                Spacer(Modifier.height(22.dp))
                 Text(
                     text = "## stack",
                     style = MaterialTheme.typography.labelLarge,
                     color = extra.accent,
                 )
-                Spacer(Modifier.height(14.dp))
-                Column(
-                    Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(14.dp),
-                ) {
-                    PortfolioData.stackGroups.forEach { (group, items) ->
-                        Column(
-                            Modifier.fillMaxWidth(),
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                        ) {
-                            Text(
-                                text = group,
-                                style = MaterialTheme.typography.labelMedium,
-                                color = extra.faint,
-                            )
-                            MonoChipRow(items, Modifier.fillMaxWidth())
-                        }
-                    }
-                }
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = "Tools I reach for when shipping Android products.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = extra.muted,
+                )
+                Spacer(Modifier.height(12.dp))
+                MonoChipRow(PortfolioData.stack, Modifier.fillMaxWidth())
             }
         }
     }
@@ -317,284 +313,426 @@ fun BuildsSection(modifier: Modifier = Modifier) {
     val extra = PortfolioTheme.extra
 
     Shell(modifier.padding(vertical = 24.dp)) {
-        Row(
-            Modifier.fillMaxWidth().padding(bottom = 20.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.Bottom,
+        // Terminal-style section head
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(16.dp))
+                .background(extra.codeBg)
+                .border(1.dp, scheme.outline, RoundedCornerShape(16.dp))
+                .padding(18.dp),
         ) {
-            Column {
-                Text(
-                    text = "builds/",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = extra.accent,
-                )
-                Spacer(Modifier.height(6.dp))
-                Text(
-                    text = "Selected ships",
-                    style = MaterialTheme.typography.displayMedium,
-                    color = scheme.onBackground,
-                )
-                Spacer(Modifier.height(8.dp))
-                Text(
-                    text = "Case notes from production apps — not demos.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = extra.muted,
-                )
-            }
             Text(
-                text = "${PortfolioData.projects.size} entries",
+                text = "$ git log --ships --oneline",
                 style = MaterialTheme.typography.labelLarge,
-                color = extra.faint,
+                color = extra.accent,
+            )
+            Spacer(Modifier.height(10.dp))
+            Text(
+                text = "Selected ships",
+                style = MaterialTheme.typography.displayMedium,
+                color = scheme.onBackground,
+            )
+            Spacer(Modifier.height(6.dp))
+            Text(
+                text = "${PortfolioData.projects.size} production releases · scroll the device lab under each commit",
+                style = MaterialTheme.typography.bodyMedium,
+                color = extra.muted,
             )
         }
 
-        Column(verticalArrangement = Arrangement.spacedBy(28.dp)) {
+        Spacer(Modifier.height(36.dp))
+
+        Column {
             PortfolioData.projects.forEachIndexed { index, project ->
-                ProjectCase(
+                ReleaseCommit(
                     project = project,
-                    reverse = index % 2 == 1,
+                    isLast = index == PortfolioData.projects.lastIndex,
                 )
             }
         }
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun ProjectCase(
+private fun ReleaseCommit(
     project: Project,
-    reverse: Boolean,
+    isLast: Boolean,
     modifier: Modifier = Modifier,
 ) {
     val scheme = MaterialTheme.colorScheme
     val extra = PortfolioTheme.extra
     val uriHandler = LocalUriHandler.current
 
-    Column(
-        modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(18.dp))
-            .background(scheme.surface)
-            .border(1.dp, scheme.outline, RoundedCornerShape(18.dp)),
-    ) {
-        // Case header
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .background(extra.codeBg)
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
+    Row(modifier.fillMaxWidth()) {
+        // Timeline rail
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.width(36.dp),
         ) {
-            Text(
-                text = "builds/${project.id}.md",
-                style = MaterialTheme.typography.labelLarge,
-                color = extra.muted,
+            Box(
+                Modifier
+                    .size(14.dp)
+                    .clip(CircleShape)
+                    .background(project.accent)
+                    .border(3.dp, scheme.background, CircleShape),
             )
-            StatusDot(project.status)
-        }
-        Box(Modifier.fillMaxWidth().height(1.dp).background(scheme.outline))
-
-        BoxWithConstraints(
-            Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-        ) {
-            val wide = maxWidth >= 720.dp
-
-            if (wide) {
-                Row(
-                    Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(20.dp),
-                    verticalAlignment = Alignment.Top,
-                ) {
-                    val shot: @Composable (Modifier) -> Unit = { mod ->
-                        ProjectShot(project, mod.weight(1.1f))
-                    }
-                    val body: @Composable (Modifier) -> Unit = { mod ->
-                        ProjectBody(project, mod.weight(1f))
-                    }
-                    if (reverse) {
-                        body(Modifier)
-                        shot(Modifier)
-                    } else {
-                        shot(Modifier)
-                        body(Modifier)
-                    }
-                }
-            } else {
-                Column(
-                    Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                ) {
-                    ProjectShot(project, Modifier.fillMaxWidth())
-                    ProjectBody(project, Modifier.fillMaxWidth())
-                }
+            if (!isLast) {
+                Box(
+                    Modifier
+                        .width(2.dp)
+                        .weight(1f, fill = true)
+                        .background(
+                            Brush.verticalGradient(
+                                listOf(project.accent.copy(0.55f), scheme.outline),
+                            ),
+                        ),
+                )
             }
         }
 
-        if (project.link != null) {
-            Box(Modifier.fillMaxWidth().height(1.dp).background(scheme.outline))
+        Column(
+            Modifier
+                .weight(1f)
+                .padding(start = 10.dp, bottom = if (isLast) 0.dp else 44.dp),
+        ) {
+            // Commit meta line
             Row(
-                Modifier
-                    .fillMaxWidth()
-                    .clickable { uriHandler.openUri(project.link) }
-                    .padding(horizontal = 16.dp, vertical = 14.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 Text(
-                    text = when (project.linkType) {
-                        LinkType.PlayStore -> "Open on Play Store"
-                        LinkType.GitHub -> "Open on GitHub"
-                        else -> "Open project"
-                    },
+                    text = project.index,
                     style = MaterialTheme.typography.labelLarge,
-                    color = extra.accent,
+                    color = project.accent,
                 )
                 Text(
-                    text = "→",
+                    text = "ship/${project.id}",
                     style = MaterialTheme.typography.labelLarge,
-                    color = extra.accent,
+                    color = extra.faint,
                 )
+                StatusDot(project.status)
             }
-        }
-    }
-}
 
-@Composable
-private fun ProjectShot(
-    project: Project,
-    modifier: Modifier = Modifier,
-) {
-    val scheme = MaterialTheme.colorScheme
-    val extra = PortfolioTheme.extra
+            Spacer(Modifier.height(12.dp))
 
-    Column(
-        modifier
-            .clip(RoundedCornerShape(14.dp))
-            .background(extra.codeBg)
-            .border(1.dp, scheme.outline, RoundedCornerShape(14.dp)),
-    ) {
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = "screenshots",
-                style = MaterialTheme.typography.labelMedium,
-                color = extra.faint,
-            )
-            Text(
-                text = "${project.screenshots.size} images",
-                style = MaterialTheme.typography.labelMedium,
-                color = extra.accent,
-            )
-        }
-        Box(Modifier.fillMaxWidth().height(1.dp).background(scheme.outline))
-        
-        // Grid of screenshots
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            project.screenshots.chunked(2).forEach { rowScreenshots ->
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    rowScreenshots.forEach { screenshot ->
-                        Image(
-                            painter = painterResource(screenshot),
-                            contentDescription = "${project.title} screenshot",
-                            contentScale = ContentScale.Fit,
-                            modifier = Modifier
-                                .weight(1f)
-                                .aspectRatio(9f / 16f)
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(scheme.surface),
-                        )
+            // Giant title block with watermark index
+            Box(Modifier.fillMaxWidth()) {
+                Text(
+                    text = project.index,
+                    style = MaterialTheme.typography.displayLarge.copy(
+                        fontSize = 72.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = project.accent.copy(alpha = 0.08f),
+                    ),
+                    modifier = Modifier.align(Alignment.CenterEnd),
+                )
+                Column {
+                    Text(
+                        text = project.title,
+                        style = MaterialTheme.typography.displayMedium,
+                        color = scheme.onBackground,
+                    )
+                    Spacer(Modifier.height(6.dp))
+                    Text(
+                        text = project.blurb,
+                        style = MaterialTheme.typography.titleLarge,
+                        color = extra.muted,
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        MetaPill(project.category, project.accent)
+                        MetaPill(project.year, extra.muted)
+                        MetaPill(project.role, extra.muted)
                     }
                 }
             }
+
+            Spacer(Modifier.height(18.dp))
+
+            // Story as release notes panel
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(scheme.surface)
+                    .border(1.dp, scheme.outline, RoundedCornerShape(14.dp)),
+            ) {
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .background(extra.codeBg)
+                        .padding(horizontal = 14.dp, vertical = 10.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Text("RELEASE_NOTES.md", style = MaterialTheme.typography.labelMedium, color = extra.faint)
+                    Text("v${project.index}", style = MaterialTheme.typography.labelMedium, color = project.accent)
+                }
+                Text(
+                    text = project.story,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = scheme.onBackground,
+                    modifier = Modifier.padding(14.dp),
+                )
+            }
+
+            Spacer(Modifier.height(14.dp))
+
+            // Diff-style highlights
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(extra.codeBg)
+                    .border(1.dp, scheme.outline, RoundedCornerShape(14.dp))
+                    .padding(12.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                Text(
+                    text = "diff --git a/features b/features",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = extra.faint,
+                    modifier = Modifier.padding(bottom = 6.dp),
+                )
+                project.highlights.forEach { item ->
+                    DiffLine(text = item, accent = project.accent)
+                }
+            }
+
+            Spacer(Modifier.height(14.dp))
+
+            // dependencies block
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(scheme.surface)
+                    .border(1.dp, scheme.outline, RoundedCornerShape(14.dp))
+                    .padding(14.dp),
+            ) {
+                Text(
+                    text = "\"dependencies\": {",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = extra.faint,
+                )
+                Spacer(Modifier.height(10.dp))
+                MonoChipRow(project.stack)
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = "}",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = extra.faint,
+                )
+            }
+
+            Spacer(Modifier.height(18.dp))
+
+            // Play Store listing art gallery
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(18.dp))
+                    .background(
+                        Brush.verticalGradient(
+                            listOf(
+                                project.accent.copy(alpha = 0.10f),
+                                extra.codeBg,
+                                extra.codeBg,
+                            ),
+                        ),
+                    )
+                    .border(1.dp, scheme.outline, RoundedCornerShape(18.dp))
+                    .padding(vertical = 16.dp),
+            ) {
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column {
+                        Text(
+                            text = "store art",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = project.accent,
+                        )
+                        Text(
+                            text = "Play listing · ${project.screenshots.size} assets",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = extra.faint,
+                        )
+                    }
+                    Text(
+                        text = "scroll →",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = extra.muted,
+                    )
+                }
+                Spacer(Modifier.height(14.dp))
+                ListingGallery(
+                    screenshots = project.screenshots,
+                    title = project.title,
+                    accent = project.accent,
+                )
+            }
+
+            if (project.link != null) {
+                Spacer(Modifier.height(14.dp))
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(scheme.surface)
+                        .border(1.dp, scheme.outline, RoundedCornerShape(12.dp))
+                        .clickable { uriHandler.openUri(project.link) }
+                        .padding(horizontal = 14.dp, vertical = 12.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = when (project.linkType) {
+                            LinkType.PlayStore -> "$ adb shell am start -a VIEW ${project.title}"
+                            LinkType.GitHub -> "$ gh repo view ${project.id}"
+                            else -> "$ open ${project.id}"
+                        },
+                        style = MaterialTheme.typography.labelLarge,
+                        color = extra.accent,
+                        modifier = Modifier.weight(1f),
+                        maxLines = 1,
+                    )
+                    Text(
+                        text = "run ↵",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = project.accent,
+                    )
+                }
+            }
         }
     }
 }
 
 @Composable
-private fun ProjectBody(
-    project: Project,
-    modifier: Modifier = Modifier,
+private fun MetaPill(
+    text: String,
+    color: androidx.compose.ui.graphics.Color,
 ) {
     val scheme = MaterialTheme.colorScheme
-    val extra = PortfolioTheme.extra
-
-    Column(
-        modifier,
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+    Box(
+        Modifier
+            .clip(RoundedCornerShape(999.dp))
+            .border(1.dp, color.copy(alpha = 0.35f), RoundedCornerShape(999.dp))
+            .padding(horizontal = 10.dp, vertical = 5.dp),
     ) {
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            MonoChip(project.category)
-            MonoChip(project.year)
-            MonoChip(project.role)
-        }
-
         Text(
-            text = project.title,
-            style = MaterialTheme.typography.displayMedium,
-            color = scheme.onBackground,
+            text = text,
+            style = MaterialTheme.typography.labelMedium,
+            color = color,
         )
+    }
+}
 
+@Composable
+private fun DiffLine(
+    text: String,
+    accent: androidx.compose.ui.graphics.Color,
+) {
+    val scheme = MaterialTheme.colorScheme
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(8.dp))
+            .background(accent.copy(alpha = 0.08f))
+            .padding(horizontal = 10.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
         Text(
-            text = project.blurb,
-            style = MaterialTheme.typography.titleLarge,
-            color = extra.accent,
-        )
-
-        Text(
-            text = project.story,
-            style = MaterialTheme.typography.bodyLarge,
-            color = extra.muted,
-        )
-
-        Spacer(Modifier.height(4.dp))
-        Text(
-            text = "## highlights",
+            text = "+",
             style = MaterialTheme.typography.labelLarge,
-            color = extra.accent,
+            color = accent,
         )
-        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            project.highlights.forEach { item ->
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodyMedium,
+            color = scheme.onBackground,
+            modifier = Modifier.weight(1f),
+        )
+    }
+}
+
+@Composable
+private fun ListingGallery(
+    screenshots: List<DrawableResource>,
+    title: String,
+    accent: androidx.compose.ui.graphics.Color,
+    modifier: Modifier = Modifier,
+) {
+    val scroll = rememberScrollState()
+    val scheme = MaterialTheme.colorScheme
+    val extra = PortfolioTheme.extra
+    // Play listing graphics are often tall marketing frames — fixed height, width from image ratio via Fit
+    val cardHeight = 420.dp
+    val cardWidth = 240.dp
+
+    Row(
+        modifier
+            .fillMaxWidth()
+            .horizontalScroll(scroll)
+            .padding(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        screenshots.forEachIndexed { i, shot ->
+            Column(
+                Modifier
+                    .width(cardWidth)
+                    .height(cardHeight)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(scheme.surface)
+                    .border(1.dp, scheme.outline, RoundedCornerShape(16.dp)),
+            ) {
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 10.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
                     Text(
-                        text = "›",
-                        style = MaterialTheme.typography.labelLarge,
-                        color = extra.accent,
+                        text = "asset_${(i + 1).toString().padStart(2, '0')}",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = extra.faint,
                     )
-                    Text(
-                        text = item,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = scheme.onBackground,
-                        modifier = Modifier.weight(1f),
+                    Box(
+                        Modifier
+                            .size(6.dp)
+                            .clip(CircleShape)
+                            .background(accent),
+                    )
+                }
+                Box(Modifier.fillMaxWidth().height(1.dp).background(scheme.outline))
+                Box(
+                    Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .padding(10.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Image(
+                        painter = painterResource(shot),
+                        contentDescription = "$title listing ${i + 1}",
+                        contentScale = ContentScale.Fit,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(RoundedCornerShape(10.dp)),
                     )
                 }
             }
         }
-
-        Spacer(Modifier.height(4.dp))
-        Text(
-            text = "## stack",
-            style = MaterialTheme.typography.labelLarge,
-            color = extra.accent,
-        )
-        MonoChipRow(project.stack)
     }
 }
 
@@ -634,11 +772,26 @@ fun ConnectSection(modifier: Modifier = Modifier) {
                     }
                 }
                 Spacer(Modifier.height(28.dp))
-                Text(
-                    text = "© ${PortfolioData.NAME} · Compose Multiplatform",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = extra.faint,
-                )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = "© ${PortfolioData.NAME}",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = extra.faint,
+                    )
+                    Text(
+                        text = "·",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = extra.faint,
+                    )
+                    Text(
+                        text = "Made with Kotlin",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = extra.faint,
+                    )
+                }
             }
         }
     }

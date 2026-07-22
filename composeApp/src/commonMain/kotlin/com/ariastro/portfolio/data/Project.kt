@@ -72,9 +72,14 @@ object PortfolioData {
     )
 
     const val ABOUT =
-        "I own features end-to-end — architecture, modularization, " +
-            "networking, offline, maps, payments, and Play Store delivery. " +
-            "Comfortable in messy production codebases and greenfield Compose apps."
+        "I build Android apps for a living — the kind that real people open every day, " +
+            "not just demos that look pretty in a deck. Kotlin is home. Compose when it fits, " +
+            "Views when the codebase says so. I like Clean Architecture not as a religion, " +
+            "but because it keeps me sane when features pile up.\n\n" +
+            "I've shipped across telecom, school transport, gaming, farming tools, fitness — " +
+            "messy production code and greenfield alike. Happy digging into modularization, " +
+            "maps, payments, offline, or why something crashed at 2am. If it ships and stays " +
+            "readable, that's a good day."
 
     val facts = listOf(
         "Kotlin" to "primary language",
@@ -82,13 +87,25 @@ object PortfolioData {
         "Clean Arch" to "default approach",
     )
 
-    val stackGroups = listOf(
-        "ui" to listOf("Jetpack Compose", "Material 3", "ViewBinding", "XML"),
-        "arch" to listOf("Clean Architecture", "MVVM", "MVI", "Modularization"),
-        "async" to listOf("Coroutines", "Flow", "WorkManager"),
-        "data" to listOf("Room", "DataStore", "Retrofit", "Ktor", "Moshi"),
-        "di" to listOf("Hilt", "Koin", "Dagger"),
-        "platform" to listOf("Firebase", "Maps", "Stripe", "AdMob", "KMP"),
+    val stack = listOf(
+        "Kotlin",
+        "Jetpack Compose",
+        "Material 3",
+        "Clean Architecture",
+        "MVVM / MVI",
+        "Modularization",
+        "Coroutines",
+        "Flow",
+        "Hilt / Koin",
+        "Room",
+        "DataStore",
+        "Retrofit / Ktor",
+        "WorkManager",
+        "Firebase",
+        "Google Maps",
+        "Stripe",
+        "Compose Multiplatform",
+        "Unit tests",
     )
 
     val projects = listOf(
