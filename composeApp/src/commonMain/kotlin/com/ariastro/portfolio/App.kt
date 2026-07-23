@@ -18,6 +18,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -40,7 +42,21 @@ fun App() {
     PortfolioTheme(darkTheme = isDark) {
         val scroll = rememberScrollState()
         val scope = rememberCoroutineScope()
-        var sectionPositions by remember { mutableStateOf(mapOf<String, Int>()) }
+        val sectionPositions = remember { mutableStateMapOf<String, Int>() }
+        val activeTab by remember {
+            derivedStateOf {
+                val scrollY = scroll.value
+                if (scroll.maxValue > 0 && scrollY >= scroll.maxValue - 10) {
+                    "connect"
+                } else {
+                    val offset = 150
+                    sectionPositions.entries
+                        .filter { it.value - offset <= scrollY }
+                        .maxByOrNull { it.value }
+                        ?.key ?: ""
+                }
+            }
+        }
         val bg by animateColorAsState(
             targetValue = MaterialTheme.colorScheme.background,
             animationSpec = tween(durationMillis = 220),
@@ -77,7 +93,10 @@ fun App() {
                 Box(
                     modifier = Modifier
                         .onGloballyPositioned { coords ->
-                            sectionPositions = sectionPositions + ("readme" to coords.positionInParent().y.roundToInt())
+                            val newY = coords.positionInParent().y.roundToInt()
+                            if (sectionPositions["readme"] != newY) {
+                                sectionPositions["readme"] = newY
+                            }
                         }
                 ) {
                     ReadmeSection()
@@ -85,7 +104,10 @@ fun App() {
                 Box(
                     modifier = Modifier
                         .onGloballyPositioned { coords ->
-                            sectionPositions = sectionPositions + ("builds" to coords.positionInParent().y.roundToInt())
+                            val newY = coords.positionInParent().y.roundToInt()
+                            if (sectionPositions["builds"] != newY) {
+                                sectionPositions["builds"] = newY
+                            }
                         }
                 ) {
                     BuildsSection()
@@ -93,7 +115,10 @@ fun App() {
                 Box(
                     modifier = Modifier
                         .onGloballyPositioned { coords ->
-                            sectionPositions = sectionPositions + ("connect" to coords.positionInParent().y.roundToInt())
+                            val newY = coords.positionInParent().y.roundToInt()
+                            if (sectionPositions["connect"] != newY) {
+                                sectionPositions["connect"] = newY
+                            }
                         }
                 ) {
                     ConnectSection()
@@ -110,6 +135,7 @@ fun App() {
                         "connect" -> go("connect")
                     }
                 },
+                activeTab = activeTab,
                 modifier = Modifier.align(Alignment.TopCenter).fillMaxWidth(),
             )
         }

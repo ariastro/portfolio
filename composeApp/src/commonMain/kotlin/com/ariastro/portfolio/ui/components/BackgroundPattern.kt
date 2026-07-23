@@ -7,6 +7,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PointMode
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.unit.dp
 import com.ariastro.portfolio.ui.theme.PortfolioTheme
 
@@ -42,19 +44,26 @@ fun BackgroundPattern(modifier: Modifier = Modifier) {
         )
 
         val step = 28.dp.toPx()
-        val radius = 1.1.dp.toPx()
+        val canvasWidth = this@Canvas.size.width
+        val canvasHeight = this@Canvas.size.height
+        val points = mutableListOf<Offset>()
         var y = step
-        while (y < size.height) {
+        while (y < canvasHeight) {
             var x = step
-            while (x < size.width) {
-                drawCircle(
-                    color = dot,
-                    radius = radius,
-                    center = Offset(x, y),
-                )
+            while (x < canvasWidth) {
+                points.add(Offset(x, y))
                 x += step
             }
             y += step
+        }
+        if (points.isNotEmpty()) {
+            drawPoints(
+                points = points,
+                pointMode = PointMode.Points,
+                color = dot,
+                strokeWidth = 2.2f,
+                cap = StrokeCap.Round,
+            )
         }
     }
 }

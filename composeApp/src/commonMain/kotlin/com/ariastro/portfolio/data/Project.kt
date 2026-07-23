@@ -1,23 +1,23 @@
 package com.ariastro.portfolio.data
 
 import androidx.compose.ui.graphics.Color
+import com.ariastro.portfolio.ui.theme.BrandMyXL
+import com.ariastro.portfolio.ui.theme.BrandSchoolRyde
+import com.ariastro.portfolio.ui.theme.BrandTagTag
+import com.ariastro.portfolio.ui.theme.BrandSuperAgree
+import com.ariastro.portfolio.ui.theme.BrandTrackFit
 import com.ariastro.portfolio.resources.Res
-import com.ariastro.portfolio.resources.project_myxl
 import com.ariastro.portfolio.resources.project_myxl_1
 import com.ariastro.portfolio.resources.project_myxl_2
-import com.ariastro.portfolio.resources.project_schoolryde
 import com.ariastro.portfolio.resources.project_schoolryde_1
 import com.ariastro.portfolio.resources.project_schoolryde_2
 import com.ariastro.portfolio.resources.project_schoolryde_3
 import com.ariastro.portfolio.resources.project_schoolryde_4
-import com.ariastro.portfolio.resources.project_superagree
 import com.ariastro.portfolio.resources.project_superagree_1
 import com.ariastro.portfolio.resources.project_superagree_2
-import com.ariastro.portfolio.resources.project_tagtag
 import com.ariastro.portfolio.resources.project_tagtag_1
 import com.ariastro.portfolio.resources.project_tagtag_2
 import com.ariastro.portfolio.resources.project_tagtag_3
-import com.ariastro.portfolio.resources.project_trackfit
 import com.ariastro.portfolio.resources.project_trackfit_1
 import com.ariastro.portfolio.resources.project_trackfit_2
 import com.ariastro.portfolio.resources.project_trackfit_3
@@ -133,7 +133,7 @@ object PortfolioData {
                 "Kotlin", "MVVM", "Hilt", "Retrofit", "Room", "WorkManager",
                 "Google Maps", "Modularization", "Clean Architecture",
             ),
-            accent = Color(0xFF2563EB),
+            accent = BrandMyXL,
             screenshots = listOf(
                 Res.drawable.project_myxl_1,
                 Res.drawable.project_myxl_2,
@@ -163,7 +163,7 @@ object PortfolioData {
                 "Jetpack Compose", "MVI", "Hilt", "Google Maps", "Places API",
                 "Stripe", "Room", "Firebase", "DataStore",
             ),
-            accent = Color(0xFF0D9488),
+            accent = BrandSchoolRyde,
             screenshots = listOf(
                 Res.drawable.project_schoolryde_1,
                 Res.drawable.project_schoolryde_2,
@@ -195,7 +195,7 @@ object PortfolioData {
                 "Kotlin", "Compose", "Hilt", "Room", "AdMob",
                 "Firebase", "Crashlytics", "Payment Gateway",
             ),
-            accent = Color(0xFF16A34A),
+            accent = BrandTagTag,
             screenshots = listOf(
                 Res.drawable.project_tagtag_1,
                 Res.drawable.project_tagtag_2,
@@ -226,7 +226,7 @@ object PortfolioData {
                 "Kotlin", "MVVM", "Koin", "RxJava", "Room",
                 "DataStore", "Dynamic Features", "Firebase",
             ),
-            accent = Color(0xFF65A30D),
+            accent = BrandSuperAgree,
             screenshots = listOf(
                 Res.drawable.project_superagree_1,
                 Res.drawable.project_superagree_2,
@@ -256,7 +256,7 @@ object PortfolioData {
                 "Kotlin", "MVVM", "Hilt", "Flow", "Paging3",
                 "Firebase", "Moshi", "Custom Calendar",
             ),
-            accent = Color(0xFFDC2626),
+            accent = BrandTrackFit,
             screenshots = listOf(
                 Res.drawable.project_trackfit_1,
                 Res.drawable.project_trackfit_2,

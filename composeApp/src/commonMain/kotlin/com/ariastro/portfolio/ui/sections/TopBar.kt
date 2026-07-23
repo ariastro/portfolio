@@ -30,6 +30,7 @@ fun TopBar(
     isDark: Boolean,
     onToggleTheme: () -> Unit,
     onNav: (String) -> Unit,
+    activeTab: String,
     modifier: Modifier = Modifier,
 ) {
     val scheme = MaterialTheme.colorScheme
@@ -77,7 +78,7 @@ fun TopBar(
                         Text(
                             text = tab,
                             style = MaterialTheme.typography.labelLarge,
-                            color = if (tab == "builds") extra.accent else extra.muted,
+                            color = if (tab == activeTab) extra.accent else extra.muted,
                             modifier = Modifier
                                 .clip(shape = RoundedCornerShape(size = 6.dp))
                                 .clickable { onNav(tab) }
