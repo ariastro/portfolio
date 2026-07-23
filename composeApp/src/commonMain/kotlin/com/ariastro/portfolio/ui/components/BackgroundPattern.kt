@@ -16,9 +16,9 @@ import com.ariastro.portfolio.ui.theme.PortfolioTheme
 fun BackgroundPattern(modifier: Modifier = Modifier) {
     val extra = PortfolioTheme.extra
     val dot = if (extra.isDark) {
-        Color.White.copy(alpha = 0.04f)
+        Color.White.copy(alpha = 0.08f)
     } else {
-        Color.Black.copy(alpha = 0.035f)
+        Color.Black.copy(alpha = 0.07f)
     }
     val glowA = extra.accent.copy(alpha = if (extra.isDark) 0.05f else 0.035f)
     val glowB = extra.accent.copy(alpha = if (extra.isDark) 0.03f else 0.02f)
@@ -44,6 +44,7 @@ fun BackgroundPattern(modifier: Modifier = Modifier) {
         )
 
         val step = 28.dp.toPx()
+        val dotRadius = 1.1.dp.toPx()
         val canvasWidth = this@Canvas.size.width
         val canvasHeight = this@Canvas.size.height
         val points = mutableListOf<Offset>()
@@ -61,7 +62,7 @@ fun BackgroundPattern(modifier: Modifier = Modifier) {
                 points = points,
                 pointMode = PointMode.Points,
                 color = dot,
-                strokeWidth = 2.2f,
+                strokeWidth = dotRadius * 2f,
                 cap = StrokeCap.Round,
             )
         }
