@@ -11,7 +11,7 @@ val BrandMyXL = Color(0xFF2563EB)
 val BrandSchoolRyde = Color(0xFF0D9488)
 val BrandTagTag = Color(0xFF16A34A)
 val BrandSuperAgree = Color(0xFF65A30D)
-val BrandTrackFit = Color(0xFFDC2626)
+val BrandTrackFit = Color(0xFF6366F1)
 
 val LBg = Color(0xFFF6F5F1)
 val LPanel = Color(0xFFFFFFFF)
