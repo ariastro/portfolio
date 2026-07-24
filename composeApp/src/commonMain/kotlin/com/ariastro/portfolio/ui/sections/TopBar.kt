@@ -31,6 +31,7 @@ fun TopBar(
     onToggleTheme: () -> Unit,
     onNav: (String) -> Unit,
     activeTab: String,
+    progress: Float,
     modifier: Modifier = Modifier,
 ) {
     val scheme = MaterialTheme.colorScheme
@@ -41,6 +42,14 @@ fun TopBar(
             .fillMaxWidth()
             .background(color = scheme.background),
     ) {
+        if (progress > 0f) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(fraction = progress)
+                    .height(height = 2.dp)
+                    .background(color = extra.accent)
+            )
+        }
         Shell {
             Row(
                 modifier = Modifier

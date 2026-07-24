@@ -56,6 +56,7 @@ object PortfolioData {
     const val EMAIL = "ariastronout@gmail.com"
     const val GITHUB = "https://github.com/ariastro"
     const val LINKEDIN = "https://www.linkedin.com/in/arisws/"
+    const val UPWORK = "https://www.upwork.com/freelancers/~01fb69fd0823d1e910?viewMode=1"
 
     val heroLines = listOf(
         "package id.ariastro.portfolio",
@@ -82,9 +83,10 @@ object PortfolioData {
             "readable, that's a good day."
 
     val facts = listOf(
-        "Kotlin" to "primary language",
-        "Compose" to "UI toolkit",
-        "Clean Arch" to "default approach",
+        "6+" to "Years Android",
+        "10M+" to "App Users",
+        "~99.8%" to "Crash-Free",
+        "KMP" to "Multiplatform",
     )
 
     val stack = listOf(

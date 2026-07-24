@@ -57,6 +57,12 @@ fun App() {
                 }
             }
         }
+        val scrollProgress by remember {
+            derivedStateOf {
+                val max = scroll.maxValue
+                if (max > 0) scroll.value.toFloat() / max.toFloat() else 0f
+            }
+        }
         val bg by animateColorAsState(
             targetValue = MaterialTheme.colorScheme.background,
             animationSpec = tween(durationMillis = 220),
@@ -136,6 +142,7 @@ fun App() {
                     }
                 },
                 activeTab = activeTab,
+                progress = scrollProgress,
                 modifier = Modifier.align(Alignment.TopCenter).fillMaxWidth(),
             )
         }

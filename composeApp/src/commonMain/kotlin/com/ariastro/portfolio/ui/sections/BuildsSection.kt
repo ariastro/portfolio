@@ -42,13 +42,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ariastro.portfolio.data.LinkType
 import com.ariastro.portfolio.data.PortfolioData
 import com.ariastro.portfolio.data.Project
-import com.ariastro.portfolio.ui.components.Shell
 import com.ariastro.portfolio.ui.components.MonoChipRow
+import com.ariastro.portfolio.ui.components.Shell
+import com.ariastro.portfolio.ui.theme.BrandTagTag
 import com.ariastro.portfolio.ui.theme.PortfolioTheme
-import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
@@ -787,7 +786,7 @@ private fun ConsoleBar(
                     .clip(shape = RoundedCornerShape(size = 6.dp))
                     .clickable { uriHandler.openUri(project.link) }
                     .background(color = extra.accentSoft)
-                    .border(width = 1.dp, color = project.accent.copy(alpha = 0.5f), shape = RoundedCornerShape(size = 6.dp))
+                    .border(width = 1.dp, color = BrandTagTag.copy(alpha = 0.5f), shape = RoundedCornerShape(size = 6.dp))
                     .padding(horizontal = 12.dp, vertical = 6.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(space = 6.dp)
@@ -795,7 +794,7 @@ private fun ConsoleBar(
                 Text(
                     text = "Run",
                     style = MaterialTheme.typography.labelSmall,
-                    color = project.accent,
+                    color = BrandTagTag,
                     fontWeight = FontWeight.Bold
                 )
             }

@@ -64,6 +64,9 @@ fun ConnectSection(modifier: Modifier = Modifier) {
                     ConnectLine(key = "linkedin", value = PortfolioData.LINKEDIN) {
                         uriHandler.openUri(PortfolioData.LINKEDIN)
                     }
+                    ConnectLine(key = "upwork", value = PortfolioData.UPWORK) {
+                        uriHandler.openUri(PortfolioData.UPWORK)
+                    }
                 }
                 Spacer(modifier = Modifier.height(height = 28.dp))
                 Row(
