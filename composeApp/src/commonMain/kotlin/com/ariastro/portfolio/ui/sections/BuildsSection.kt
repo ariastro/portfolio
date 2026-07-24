@@ -9,8 +9,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,6 +20,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -55,41 +59,43 @@ fun BuildsSection(modifier: Modifier = Modifier) {
     val scheme = MaterialTheme.colorScheme
     val extra = PortfolioTheme.extra
     var selectedIdx by remember { mutableStateOf(0) }
-    var editorMode by remember { mutableStateOf("Split") } // Code, Split, Design
+    // null until first layout: desktop Split, mobile Code
+    var editorMode by remember { mutableStateOf<String?>(null) }
     val projects = PortfolioData.projects
     val project = projects.getOrNull(selectedIdx) ?: projects[0]
 
     Shell(
         modifier = modifier.padding(vertical = 24.dp)
     ) {
-        // IDE Workspace Container
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(shape = RoundedCornerShape(size = 14.dp))
-                .background(color = extra.codeBg)
-                .border(width = 1.dp, color = scheme.outline, shape = RoundedCornerShape(size = 14.dp))
-        ) {
-            // IDE Header / Window Bar
-            IdeHeader(
-                projectName = project.title,
-                editorMode = editorMode,
-                onModeChange = { editorMode = it }
-            )
+        BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+            val wide = maxWidth >= 760.dp
+            val compact = maxWidth < 480.dp
+            val workspaceHeight = if (compact) 480.dp else 580.dp
+            val resolvedMode = editorMode ?: if (wide) "Split" else "Code"
+            val effectiveMode =
+                if (!wide && resolvedMode == "Split") "Code" else resolvedMode
 
-            Box(
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(height = 1.dp)
-                    .background(color = scheme.outline)
-            )
+                    .clip(shape = RoundedCornerShape(size = 14.dp))
+                    .background(color = extra.codeBg)
+                    .border(width = 1.dp, color = scheme.outline, shape = RoundedCornerShape(size = 14.dp))
+            ) {
+                IdeHeader(
+                    projectName = project.title,
+                    editorMode = effectiveMode,
+                    onModeChange = { editorMode = it },
+                    compact = compact,
+                    showSplit = wide,
+                )
 
-            // Split Sidebar + Editor Workspace
-            BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
-                val wide = maxWidth >= 760.dp
-
-                // Set a sensible workspace height
-                val workspaceHeight = 580.dp
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(height = 1.dp)
+                        .background(color = scheme.outline)
+                )
 
                 if (wide) {
                     Row(
@@ -97,7 +103,6 @@ fun BuildsSection(modifier: Modifier = Modifier) {
                             .fillMaxWidth()
                             .height(height = workspaceHeight)
                     ) {
-                        // Project Tree Sidebar
                         ProjectTree(
                             projects = projects,
                             selectedIdx = selectedIdx,
@@ -108,7 +113,6 @@ fun BuildsSection(modifier: Modifier = Modifier) {
                                 .background(color = scheme.surface.copy(alpha = 0.5f))
                         )
 
-                        // Split Line
                         Box(
                             modifier = Modifier
                                 .width(width = 1.dp)
@@ -116,21 +120,17 @@ fun BuildsSection(modifier: Modifier = Modifier) {
                                 .background(color = scheme.outline)
                         )
 
-                        // Editor Area
                         EditorArea(
                             project = project,
-                            editorMode = editorMode,
+                            editorMode = effectiveMode,
+                            compact = false,
                             modifier = Modifier
                                 .weight(weight = 1f)
                                 .fillMaxHeight()
                         )
                     }
                 } else {
-                    // Mobile Layout: Sidebar collapsed to selector, stack editor below
-                    Column(
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        // Horizontal file scroll selector (replaces Tree on mobile)
+                    Column(modifier = Modifier.fillMaxWidth()) {
                         MobileFileTabs(
                             projects = projects,
                             selectedIdx = selectedIdx,
@@ -147,27 +147,26 @@ fun BuildsSection(modifier: Modifier = Modifier) {
                                 .background(color = scheme.outline)
                         )
 
-                        // Editor Area
                         EditorArea(
                             project = project,
-                            editorMode = if (editorMode == "Split") "Code" else editorMode, // Force clean view on mobile
+                            editorMode = effectiveMode,
+                            compact = compact,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(height = workspaceHeight)
                         )
                     }
                 }
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(height = 1.dp)
+                        .background(color = scheme.outline)
+                )
+
+                ConsoleBar(project = project, compact = compact)
             }
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(height = 1.dp)
-                    .background(color = scheme.outline)
-            )
-
-            // Run Config Console
-            ConsoleBar(project = project)
         }
     }
 }
@@ -177,19 +176,16 @@ private fun IdeHeader(
     projectName: String,
     editorMode: String,
     onModeChange: (String) -> Unit,
+    compact: Boolean,
+    showSplit: Boolean,
     modifier: Modifier = Modifier,
 ) {
     val scheme = MaterialTheme.colorScheme
     val extra = PortfolioTheme.extra
+    val modes = if (showSplit) listOf("Code", "Split", "Design") else listOf("Code", "Design")
 
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 14.dp, vertical = 10.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        // macOS Dots
+    @Composable
+    fun TrafficLights() {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(space = 8.dp),
@@ -204,13 +200,16 @@ private fun IdeHeader(
             }
             Spacer(modifier = Modifier.width(width = 6.dp))
             Text(
-                text = "android-project-lab",
+                text = if (compact) "project-lab" else "android-project-lab",
                 style = MaterialTheme.typography.labelLarge,
                 color = extra.muted,
+                maxLines = 1,
             )
         }
+    }
 
-        // Layout Mode Switcher
+    @Composable
+    fun ModeSwitcher() {
         Row(
             modifier = Modifier
                 .clip(shape = RoundedCornerShape(size = 6.dp))
@@ -218,7 +217,7 @@ private fun IdeHeader(
                 .background(color = scheme.surface),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            listOf("Code", "Split", "Design").forEach { mode ->
+            modes.forEach { mode ->
                 Text(
                     text = mode,
                     style = MaterialTheme.typography.labelSmall,
@@ -227,9 +226,35 @@ private fun IdeHeader(
                         .clip(shape = RoundedCornerShape(size = 4.dp))
                         .clickable { onModeChange(mode) }
                         .background(color = if (editorMode == mode) extra.accentSoft else Color.Transparent)
-                        .padding(horizontal = 10.dp, vertical = 6.dp),
+                        .padding(
+                            horizontal = if (compact) 8.dp else 10.dp,
+                            vertical = 6.dp,
+                        ),
                 )
             }
+        }
+    }
+
+    if (compact) {
+        Column(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 10.dp),
+            verticalArrangement = Arrangement.spacedBy(space = 10.dp),
+        ) {
+            TrafficLights()
+            ModeSwitcher()
+        }
+    } else {
+        Row(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(horizontal = 14.dp, vertical = 10.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            TrafficLights()
+            ModeSwitcher()
         }
     }
 }
@@ -314,24 +339,24 @@ private fun MobileFileTabs(
 private fun EditorArea(
     project: Project,
     editorMode: String,
+    compact: Boolean,
     modifier: Modifier = Modifier,
 ) {
     val scheme = MaterialTheme.colorScheme
-    val extra = PortfolioTheme.extra
-    var activeTab by remember(project) { mutableStateOf("Doc") } // Default to Doc (README.md) for non-tech users
+    var activeTab by remember(project) { mutableStateOf("Doc") }
+    val panelPad = if (compact) 10.dp else 14.dp
 
     Row(modifier = modifier) {
         if (editorMode == "Code" || editorMode == "Split") {
-            // Source Code Panel
             Column(
                 modifier = Modifier
                     .weight(weight = 1f)
                     .fillMaxHeight()
             ) {
-                // Internal File Tabs
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .horizontalScroll(state = rememberScrollState())
                         .background(color = scheme.surface.copy(alpha = 0.3f))
                         .padding(horizontal = 8.dp, vertical = 4.dp),
                     horizontalArrangement = Arrangement.spacedBy(space = 8.dp)
@@ -355,12 +380,11 @@ private fun EditorArea(
                         .background(color = scheme.outline)
                 )
 
-                // Panel content based on activeTab
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(weight = 1f)
-                        .padding(all = 14.dp)
+                        .padding(all = panelPad)
                 ) {
                     if (activeTab == "Doc") {
                         DocViewer(project = project)
@@ -372,7 +396,6 @@ private fun EditorArea(
         }
 
         if (editorMode == "Split") {
-            // Split Line
             Box(
                 modifier = Modifier
                     .width(width = 1.dp)
@@ -382,15 +405,14 @@ private fun EditorArea(
         }
 
         if (editorMode == "Design" || editorMode == "Split") {
-            // Design Preview Panel
             Box(
                 modifier = Modifier
                     .weight(weight = 1f)
                     .fillMaxHeight()
-                    .padding(all = 14.dp),
+                    .padding(all = panelPad),
                 contentAlignment = Alignment.Center
             ) {
-                DesignViewer(project = project)
+                DesignViewer(project = project, compact = compact)
             }
         }
     }
@@ -447,8 +469,10 @@ private fun DocViewer(project: Project) {
             color = scheme.onSurface
         )
 
-        // Meta badges
         Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(state = rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(space = 8.dp),
         ) {
             MetaPill(text = project.category, color = project.accent)
@@ -667,10 +691,13 @@ private fun highlightKotlin(
 }
 
 @Composable
-private fun DesignViewer(project: Project) {
-    val scroll = rememberScrollState()
+private fun DesignViewer(
+    project: Project,
+    compact: Boolean = false,
+) {
     val scheme = MaterialTheme.colorScheme
     val extra = PortfolioTheme.extra
+    val shotWidth = if (compact) 180.dp else 220.dp
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -693,35 +720,50 @@ private fun DesignViewer(project: Project) {
             )
         }
 
-        Row(
+        LazyRow(
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(weight = 1f)
-                .horizontalScroll(state = scroll),
+                .weight(weight = 1f),
             horizontalArrangement = Arrangement.spacedBy(space = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            contentPadding = PaddingValues(horizontal = 2.dp),
         ) {
-            project.screenshots.forEachIndexed { i, shot ->
+            itemsIndexed(
+                items = project.screenshots,
+                key = { index, _ -> "${project.id}-$index" },
+            ) { i, shot ->
+                val painter = painterResource(resource = shot)
+                val intrinsic = painter.intrinsicSize
+                val aspect = if (
+                    intrinsic.width.isFinite() &&
+                    intrinsic.height.isFinite() &&
+                    intrinsic.width > 0f &&
+                    intrinsic.height > 0f
+                ) {
+                    intrinsic.width / intrinsic.height
+                } else {
+                    9f / 19.5f
+                }
+
                 Column(
                     modifier = Modifier
-                        .width(width = 200.dp)
-                        .fillMaxHeight()
+                        .width(width = shotWidth)
                         .clip(shape = RoundedCornerShape(size = 12.dp))
                         .background(color = scheme.surface)
                         .border(width = 1.dp, color = scheme.outline, shape = RoundedCornerShape(size = 12.dp))
                 ) {
-                    // Header frame
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 8.dp, vertical = 6.dp),
+                            .padding(horizontal = 8.dp, vertical = 5.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "screenshot_${i + 1}.png",
+                            text = "screenshot_${i + 1}.webp",
                             style = MaterialTheme.typography.labelSmall,
-                            color = extra.faint
+                            color = extra.faint,
+                            maxLines = 1,
                         )
                         Box(
                             modifier = Modifier
@@ -731,22 +773,15 @@ private fun DesignViewer(project: Project) {
                         )
                     }
                     Box(modifier = Modifier.fillMaxWidth().height(height = 1.dp).background(color = scheme.outline))
-                    Box(
+                    Image(
+                        painter = painter,
+                        contentDescription = "${project.title} screenshot",
+                        contentScale = ContentScale.Fit,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .weight(weight = 1f)
-                            .padding(all = 8.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Image(
-                            painter = painterResource(resource = shot),
-                            contentDescription = "${project.title} screenshot",
-                            contentScale = ContentScale.Fit,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .clip(shape = RoundedCornerShape(size = 6.dp))
-                        )
-                    }
+                            .aspectRatio(ratio = aspect)
+                            .clip(shape = RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp))
+                    )
                 }
             }
         }
@@ -756,48 +791,46 @@ private fun DesignViewer(project: Project) {
 @Composable
 private fun ConsoleBar(
     project: Project,
+    compact: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
-    val scheme = MaterialTheme.colorScheme
     val extra = PortfolioTheme.extra
     val uriHandler = LocalUriHandler.current
 
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 14.dp, vertical = 10.dp),
+            .padding(
+                horizontal = if (compact) 12.dp else 14.dp,
+                vertical = 10.dp,
+            ),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(space = 8.dp)
-        ) {
-            Text(
-                text = "> Ready",
-                style = MaterialTheme.typography.labelLarge,
-                color = extra.accent
-            )
-        }
+        Text(
+            text = "> Ready",
+            style = MaterialTheme.typography.labelLarge,
+            color = extra.accent,
+            maxLines = 1,
+        )
 
         if (project.link != null) {
-            Row(
+            Text(
+                text = "Run",
+                style = MaterialTheme.typography.labelSmall,
+                color = BrandTagTag,
+                fontWeight = FontWeight.Bold,
                 modifier = Modifier
                     .clip(shape = RoundedCornerShape(size = 6.dp))
                     .clickable { uriHandler.openUri(project.link) }
                     .background(color = extra.accentSoft)
-                    .border(width = 1.dp, color = BrandTagTag.copy(alpha = 0.5f), shape = RoundedCornerShape(size = 6.dp))
+                    .border(
+                        width = 1.dp,
+                        color = BrandTagTag.copy(alpha = 0.5f),
+                        shape = RoundedCornerShape(size = 6.dp),
+                    )
                     .padding(horizontal = 12.dp, vertical = 6.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(space = 6.dp)
-            ) {
-                Text(
-                    text = "Run",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = BrandTagTag,
-                    fontWeight = FontWeight.Bold
-                )
-            }
+            )
         }
     }
 }
