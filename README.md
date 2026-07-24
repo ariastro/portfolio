@@ -1,5 +1,7 @@
 # Ari SWS - Personal Portfolio
 
+[![Deploy to GitHub Pages](https://github.com/ariastro/portfolio/actions/workflows/deploy.yml/badge.svg)](https://github.com/ariastro/portfolio/actions/workflows/deploy.yml)
+
 Source code for my personal portfolio website.
 
 🌍 **[Live Portfolio Link](https://ariastro.github.io/portfolio)**
