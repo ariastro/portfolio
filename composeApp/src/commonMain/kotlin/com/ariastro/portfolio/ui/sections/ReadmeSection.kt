@@ -10,24 +10,25 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.ariastro.portfolio.data.PortfolioData
+import com.ariastro.portfolio.domain.model.Profile
 import com.ariastro.portfolio.ui.components.MonoChipRow
 import com.ariastro.portfolio.ui.components.Shell
 import com.ariastro.portfolio.ui.theme.PortfolioTheme
 
+/** Stateless readme/about section rendered from [Profile] domain data. */
 @Composable
-fun ReadmeSection(modifier: Modifier = Modifier) {
+fun ReadmeSection(profile: Profile, modifier: Modifier = Modifier) {
     val scheme = MaterialTheme.colorScheme
     val extra = PortfolioTheme.extra
 
     Shell(
-        modifier = modifier.padding(vertical = 24.dp)
+        modifier = modifier.padding(vertical = 24.dp),
     ) {
         Panel(
-            title = "README.md"
+            title = "README.md",
         ) {
             Column(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 Text(
                     text = "# About",
@@ -35,7 +36,7 @@ fun ReadmeSection(modifier: Modifier = Modifier) {
                     color = extra.accent,
                 )
                 Spacer(modifier = Modifier.height(height = 12.dp))
-                PortfolioData.ABOUT.split("\n\n").forEachIndexed { i, paragraph ->
+                profile.about.split("\n\n").forEachIndexed { i, paragraph ->
                     if (i > 0) Spacer(modifier = Modifier.height(height = 14.dp))
                     Text(
                         text = paragraph,
@@ -51,12 +52,12 @@ fun ReadmeSection(modifier: Modifier = Modifier) {
                 )
                 Spacer(modifier = Modifier.height(height = 4.dp))
                 Text(
-                    text = "Tools I reach for when shipping Android products.",
+                    text = profile.stackNote,
                     style = MaterialTheme.typography.bodyMedium,
                     color = extra.muted,
                 )
                 Spacer(modifier = Modifier.height(height = 12.dp))
-                MonoChipRow(items = PortfolioData.stack, modifier = Modifier.fillMaxWidth())
+                MonoChipRow(items = profile.stack, modifier = Modifier.fillMaxWidth())
             }
         }
     }

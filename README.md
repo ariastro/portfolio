@@ -18,6 +18,19 @@ This project is built using:
 - 📱 Responsive design
 - 🎨 Material 3 UI/UX
 
+## Architecture
+
+The app follows **Clean Architecture** with a strict dependency rule (domain depends on
+nothing; data, presentation and UI depend inward) and a single **MVI** store for the UI.
+
+- **domain** — pure Kotlin models (`Project`, `Profile`, `Section`…), the
+  `PortfolioRepository` contract and use cases. No Compose/framework imports.
+- **data** — static content plus the concrete `PortfolioRepositoryImpl`.
+- **presentation** — the MVI `PortfolioStore`: immutable `PortfolioUiState`,
+  `PortfolioIntent`s in, one-shot `PortfolioEffect`s out. Depends only on domain.
+- **ui** — stateless composables that render state and forward events; framework
+  concerns (colors, drawable assets) are resolved here, never in domain.
+
 ## Project Structure
 
 ```text
@@ -26,15 +39,18 @@ This project is built using:
 │   ├── src/
 │   │   ├── commonMain/
 │   │   │   └── kotlin/com/ariastro/portfolio/
-│   │   │       ├── App.kt                 # Main app entry
-│   │   │       ├── data/Project.kt        # Project data models
+│   │   │       ├── App.kt               # Composition root, wires the store to the UI
+│   │   │       ├── domain/              # Models, repository contract, use cases
+│   │   │       ├── data/                # Static content + repository implementation
+│   │   │       ├── presentation/        # MVI store, state, intents, effects
 │   │   │       ├── ui/
-│   │   │       │   ├── components/        # Reusable UI parts (Layout, Patterns)
-│   │   │       │   ├── sections/          # Main page sections
-│   │   │       │   └── theme/             # Colors, Typography, Theme
-│   │   ├── wasmJsMain/                    # Wasm specific code
-├── build.gradle.kts                       # Root build script
-└── settings.gradle.kts                    # Project settings
+│   │   │       │   ├── components/      # Reusable UI parts (Layout, Patterns)
+│   │   │       │   ├── sections/        # Main page sections (stateless)
+│   │   │       │   └── theme/           # Colors, Typography, Theme
+│   │   ├── commonTest/                  # Unit tests for the store
+│   │   ├── wasmJsMain/                  # Wasm specific code
+├── build.gradle.kts                     # Root build script
+└── settings.gradle.kts                  # Project settings
 ```
 
 ## Contact

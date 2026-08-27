@@ -1,6 +1,7 @@
 package com.ariastro.portfolio.ui.theme
 
 import androidx.compose.ui.graphics.Color
+import com.ariastro.portfolio.domain.model.Brand
 
 // Terminal green accent
 val Terminal = Color(0xFF3DDC84) // Android green nod
@@ -12,6 +13,16 @@ val BrandSchoolRyde = Color(0xFF0D9488)
 val BrandTagTag = Color(0xFF16A34A)
 val BrandSuperAgree = Color(0xFF65A30D)
 val BrandTrackFit = Color(0xFF6366F1)
+
+/** Resolves a domain [Brand] to its visual accent. UI owns the mapping; domain stays pure. */
+val Brand.accentColor: Color
+    get() = when (this) {
+        Brand.MY_XL -> BrandMyXL
+        Brand.SCHOOL_RYDE -> BrandSchoolRyde
+        Brand.TAG_TAG -> BrandTagTag
+        Brand.SUPER_AGREE -> BrandSuperAgree
+        Brand.TRACK_FIT -> BrandTrackFit
+    }
 
 val LBg = Color(0xFFF6F5F1)
 val LPanel = Color(0xFFFFFFFF)

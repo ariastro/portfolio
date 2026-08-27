@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.ariastro.portfolio.ui.theme.PortfolioTheme
 
@@ -91,7 +92,7 @@ fun ThemeToggle(
             .size(36.dp)
             .clip(CircleShape)
             .border(1.dp, scheme.outline, CircleShape)
-            .clickable(onClick = onToggle),
+            .clickable(role = Role.Button, onClick = onToggle),
         contentAlignment = Alignment.Center,
     ) {
         Icon(
@@ -101,19 +102,4 @@ fun ThemeToggle(
             modifier = Modifier.size(16.dp),
         )
     }
-}
-
-@Composable
-fun LinkText(
-    text: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val extra = PortfolioTheme.extra
-    Text(
-        text = text,
-        style = MaterialTheme.typography.labelLarge,
-        color = extra.accent,
-        modifier = modifier.clickable(onClick = onClick),
-    )
 }

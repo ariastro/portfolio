@@ -10,9 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -20,18 +18,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
+import com.ariastro.portfolio.domain.model.Section
 import com.ariastro.portfolio.ui.components.Shell
 import com.ariastro.portfolio.ui.components.ThemeToggle
+import com.ariastro.portfolio.ui.components.TrafficLights
 import com.ariastro.portfolio.ui.theme.PortfolioTheme
 
+/** Stateless top bar. All state comes in as parameters, all events go out as callbacks. */
 @Composable
 fun TopBar(
     isDark: Boolean,
-    onToggleTheme: () -> Unit,
-    onNav: (String) -> Unit,
-    activeTab: String,
+    activeSection: Section?,
     progress: Float,
+    onToggleTheme: () -> Unit,
+    onNavigate: (Section) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val scheme = MaterialTheme.colorScheme
@@ -47,7 +49,7 @@ fun TopBar(
                 modifier = Modifier
                     .fillMaxWidth(fraction = progress)
                     .height(height = 2.dp)
-                    .background(color = extra.accent)
+                    .background(color = extra.accent),
             )
         }
         Shell {
@@ -62,16 +64,7 @@ fun TopBar(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(space = 10.dp),
                 ) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(space = 6.dp)) {
-                        listOf(0xFFFF5F57, 0xFFFEBC2E, 0xFF28C840).forEach { c ->
-                            Box(
-                                modifier = Modifier
-                                    .size(size = 10.dp)
-                                    .clip(shape = CircleShape)
-                                    .background(color = androidx.compose.ui.graphics.Color(color = c)),
-                            )
-                        }
-                    }
+                    TrafficLights()
                     Text(
                         text = "portfolio.kt",
                         style = MaterialTheme.typography.labelLarge,
@@ -83,14 +76,14 @@ fun TopBar(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(space = 4.dp),
                 ) {
-                    listOf("readme", "builds", "connect").forEach { tab ->
+                    Section.entries.forEach { section ->
                         Text(
-                            text = tab,
+                            text = section.label,
                             style = MaterialTheme.typography.labelLarge,
-                            color = if (tab == activeTab) extra.accent else extra.muted,
+                            color = if (section == activeSection) extra.accent else extra.muted,
                             modifier = Modifier
                                 .clip(shape = RoundedCornerShape(size = 6.dp))
-                                .clickable { onNav(tab) }
+                                .clickable(role = Role.Tab) { onNavigate(section) }
                                 .padding(horizontal = 10.dp, vertical = 6.dp),
                         )
                     }
@@ -99,6 +92,11 @@ fun TopBar(
                 }
             }
         }
-        Box(modifier = Modifier.fillMaxWidth().height(height = 1.dp).background(color = scheme.outline))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(height = 1.dp)
+                .background(color = scheme.outline),
+        )
     }
 }

@@ -13,78 +13,87 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInParent
-import kotlin.math.roundToInt
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.unit.dp
+import com.ariastro.portfolio.data.PortfolioRepositoryImpl
+import com.ariastro.portfolio.domain.model.Section
+import com.ariastro.portfolio.domain.repository.PortfolioRepository
+import com.ariastro.portfolio.domain.usecase.GetProfileUseCase
+import com.ariastro.portfolio.domain.usecase.GetProjectsUseCase
+import com.ariastro.portfolio.presentation.PortfolioEffect
+import com.ariastro.portfolio.presentation.PortfolioIntent
+import com.ariastro.portfolio.presentation.PortfolioStore
 import com.ariastro.portfolio.ui.components.BackgroundPattern
-import com.ariastro.portfolio.ui.sections.BuildsSection
 import com.ariastro.portfolio.ui.sections.ConnectSection
+import com.ariastro.portfolio.ui.sections.ExperienceSection
 import com.ariastro.portfolio.ui.sections.HeroSection
 import com.ariastro.portfolio.ui.sections.ReadmeSection
 import com.ariastro.portfolio.ui.sections.TopBar
+import com.ariastro.portfolio.ui.sections.builds.BuildsSection
 import com.ariastro.portfolio.ui.theme.PortfolioTheme
-import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
+import kotlinx.coroutines.flow.collectLatest
 
+/**
+ * Composition root: builds the dependency graph (data -> domain <- presentation)
+ * and connects the MVI [PortfolioStore] to the stateless UI.
+ * The composable itself holds no business state — everything lives in the store.
+ */
 @Composable
 fun App() {
-    var isDark by remember { mutableStateOf(true) }
+    val store = remember {
+        val repository: PortfolioRepository = PortfolioRepositoryImpl()
+        PortfolioStore(
+            getProfile = GetProfileUseCase(repository),
+            getProjects = GetProjectsUseCase(repository),
+        )
+    }
+    val state by store.state.collectAsState()
 
-    PortfolioTheme(darkTheme = isDark) {
+    PortfolioTheme(darkTheme = state.isDark) {
         val scroll = rememberScrollState()
-        val scope = rememberCoroutineScope()
-        val sectionPositions = remember { mutableStateMapOf<String, Int>() }
-        val activeTab by remember {
-            derivedStateOf {
-                val scrollY = scroll.value
-                if (scroll.maxValue > 0 && scrollY >= scroll.maxValue - 10) {
-                    "connect"
-                } else {
-                    val offset = 150
-                    sectionPositions.entries
-                        .filter { it.value - offset <= scrollY }
-                        .maxByOrNull { it.value }
-                        ?.key ?: ""
+        val uriHandler = LocalUriHandler.current
+
+        // Report viewport changes to the store (single source of truth for active section + progress).
+        LaunchedEffect(scroll) {
+            snapshotFlow { scroll.value to scroll.maxValue }
+                .collectLatest { (position, max) ->
+                    store.dispatch(PortfolioIntent.ViewportChanged(position = position, max = max))
+                }
+        }
+
+        // Execute one-shot side effects emitted by the store.
+        LaunchedEffect(store) {
+            store.effects.collectLatest { effect ->
+                when (effect) {
+                    is PortfolioEffect.ScrollTo ->
+                        scroll.animateScrollTo(effect.y.coerceIn(0, scroll.maxValue))
+
+                    is PortfolioEffect.OpenLink ->
+                        uriHandler.openUri(effect.url)
                 }
             }
         }
-        val scrollProgress by remember {
-            derivedStateOf {
-                val max = scroll.maxValue
-                if (max > 0) scroll.value.toFloat() / max.toFloat() else 0f
-            }
-        }
+
         val bg by animateColorAsState(
             targetValue = MaterialTheme.colorScheme.background,
             animationSpec = tween(durationMillis = 220),
             label = "bg",
         )
 
-        fun go(sectionId: String) {
-            val yPos = sectionPositions[sectionId] ?: return
-            scope.launch {
-                val max = scroll.maxValue
-                if (max > 0) {
-                    // Offset by TopBar height + spacing (e.g., 80dp)
-                    val offset = 100 // Adjust this value if TopBar is larger/smaller
-                    scroll.animateScrollTo((yPos - offset).coerceIn(0, max))
-                }
-            }
-        }
-
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(color = bg)
+                .background(color = bg),
         ) {
             BackgroundPattern(modifier = Modifier.fillMaxSize())
 
@@ -95,56 +104,71 @@ fun App() {
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Spacer(modifier = Modifier.height(height = 64.dp))
-                HeroSection()
-                Box(
-                    modifier = Modifier
-                        .onGloballyPositioned { coords ->
-                            val newY = coords.positionInParent().y.roundToInt()
-                            if (sectionPositions["readme"] != newY) {
-                                sectionPositions["readme"] = newY
-                            }
-                        }
-                ) {
-                    ReadmeSection()
+
+                HeroSection(profile = state.profile)
+
+                SectionAnchor(section = Section.README, store = store) {
+                    ReadmeSection(profile = state.profile)
                 }
-                Box(
-                    modifier = Modifier
-                        .onGloballyPositioned { coords ->
-                            val newY = coords.positionInParent().y.roundToInt()
-                            if (sectionPositions["builds"] != newY) {
-                                sectionPositions["builds"] = newY
-                            }
-                        }
-                ) {
-                    BuildsSection()
+                SectionAnchor(section = Section.EXPERIENCE, store = store) {
+                    ExperienceSection(
+                        profile = state.profile,
+                        showAll = state.showAllExperience,
+                        onToggleShowAll = { store.dispatch(PortfolioIntent.ToggleAllExperience) },
+                    )
                 }
-                Box(
-                    modifier = Modifier
-                        .onGloballyPositioned { coords ->
-                            val newY = coords.positionInParent().y.roundToInt()
-                            if (sectionPositions["connect"] != newY) {
-                                sectionPositions["connect"] = newY
-                            }
-                        }
-                ) {
-                    ConnectSection()
+                SectionAnchor(section = Section.BUILDS, store = store) {
+                    BuildsSection(
+                        projects = state.projects,
+                        selectedProjectIndex = state.selectedProjectIndex,
+                        editorMode = state.editorMode,
+                        onSelectProject = { store.dispatch(PortfolioIntent.SelectProject(it)) },
+                        onEditorModeChange = { store.dispatch(PortfolioIntent.ChangeEditorMode(it)) },
+                        onOpenLink = { store.dispatch(PortfolioIntent.OpenLink(it)) },
+                    )
+                }
+                SectionAnchor(section = Section.CONNECT, store = store) {
+                    ConnectSection(
+                        profile = state.profile,
+                        onOpenLink = { store.dispatch(PortfolioIntent.OpenLink(it)) },
+                    )
                 }
             }
 
             TopBar(
-                isDark = isDark,
-                onToggleTheme = { isDark = !isDark },
-                onNav = { tab ->
-                    when (tab) {
-                        "readme" -> go("readme")
-                        "builds" -> go("builds")
-                        "connect" -> go("connect")
-                    }
-                },
-                activeTab = activeTab,
-                progress = scrollProgress,
-                modifier = Modifier.align(Alignment.TopCenter).fillMaxWidth(),
+                isDark = state.isDark,
+                activeSection = state.activeSection,
+                progress = state.scrollProgress,
+                onToggleTheme = { store.dispatch(PortfolioIntent.ToggleTheme) },
+                onNavigate = { store.dispatch(PortfolioIntent.NavigateToSection(it)) },
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .fillMaxWidth(),
             )
         }
+    }
+}
+
+/**
+ * Wraps a section and reports its measured position inside the scrollable column to the store.
+ * Layout knowledge stays in the view layer; the store only receives plain numbers.
+ */
+@Composable
+private fun SectionAnchor(
+    section: Section,
+    store: PortfolioStore,
+    content: @Composable () -> Unit,
+) {
+    Box(
+        modifier = Modifier.onGloballyPositioned { coords ->
+            store.dispatch(
+                PortfolioIntent.SectionPositionChanged(
+                    section = section,
+                    y = coords.positionInParent().y.roundToInt(),
+                ),
+            )
+        },
+    ) {
+        content()
     }
 }

@@ -22,18 +22,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ariastro.portfolio.data.PortfolioData
+import com.ariastro.portfolio.domain.model.Profile
 import com.ariastro.portfolio.ui.components.Shell
 import com.ariastro.portfolio.ui.components.StatusDot
 import com.ariastro.portfolio.ui.theme.PortfolioTheme
 
+/** Stateless hero section rendered from [Profile] domain data. */
 @Composable
-fun HeroSection(modifier: Modifier = Modifier) {
-    val scheme = MaterialTheme.colorScheme
-    val extra = PortfolioTheme.extra
-
+fun HeroSection(profile: Profile, modifier: Modifier = Modifier) {
     Shell(
-        modifier = modifier.padding(top = 40.dp, bottom = 48.dp)
+        modifier = modifier.padding(top = 40.dp, bottom = 48.dp),
     ) {
         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
             val wide = maxWidth >= 760.dp
@@ -43,13 +41,13 @@ fun HeroSection(modifier: Modifier = Modifier) {
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(space = 28.dp),
                 ) {
-                    CodeWindow(modifier = Modifier.weight(weight = 1.15f))
-                    HeroMeta(modifier = Modifier.weight(weight = 0.85f))
+                    CodeWindow(profile = profile, modifier = Modifier.weight(weight = 1.15f))
+                    HeroMeta(profile = profile, modifier = Modifier.weight(weight = 0.85f))
                 }
             } else {
                 Column(verticalArrangement = Arrangement.spacedBy(space = 24.dp)) {
-                    CodeWindow(modifier = Modifier.fillMaxWidth())
-                    HeroMeta(modifier = Modifier.fillMaxWidth())
+                    CodeWindow(profile = profile, modifier = Modifier.fillMaxWidth())
+                    HeroMeta(profile = profile, modifier = Modifier.fillMaxWidth())
                 }
             }
         }
@@ -57,7 +55,7 @@ fun HeroSection(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun CodeWindow(modifier: Modifier = Modifier) {
+private fun CodeWindow(profile: Profile, modifier: Modifier = Modifier) {
     val scheme = MaterialTheme.colorScheme
     val extra = PortfolioTheme.extra
 
@@ -78,14 +76,19 @@ private fun CodeWindow(modifier: Modifier = Modifier) {
             Text(text = "Main.kt", style = MaterialTheme.typography.labelLarge, color = extra.muted)
             StatusDot(label = "BUILD SUCCESSFUL")
         }
-        Box(modifier = Modifier.fillMaxWidth().height(height = 1.dp).background(color = scheme.outline))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(height = 1.dp)
+                .background(color = scheme.outline),
+        )
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(all = 16.dp),
             verticalArrangement = Arrangement.spacedBy(space = 2.dp),
         ) {
-            PortfolioData.heroLines.forEachIndexed { i, line ->
+            profile.heroCodeLines.forEachIndexed { i, line ->
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(space = 12.dp),
@@ -103,8 +106,10 @@ private fun CodeWindow(modifier: Modifier = Modifier) {
                         ),
                         color = when {
                             line.startsWith(prefix = "package") -> extra.muted
-                            line.startsWith(prefix = "/**") || line.startsWith(prefix = " *") || line.startsWith(prefix = " */") ->
-                                extra.faint
+                            line.startsWith(prefix = "/**") ||
+                                line.startsWith(prefix = " *") ||
+                                line.startsWith(prefix = " */") -> extra.faint
+
                             line.contains(other = "fun ") || line == "}" -> scheme.onBackground
                             line.trim().endsWith(suffix = "()") -> extra.accent
                             else -> scheme.onBackground
@@ -118,46 +123,45 @@ private fun CodeWindow(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun HeroMeta(modifier: Modifier = Modifier) {
+private fun HeroMeta(profile: Profile, modifier: Modifier = Modifier) {
     val scheme = MaterialTheme.colorScheme
     val extra = PortfolioTheme.extra
 
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(space = 16.dp)) {
         Text(
-            text = PortfolioData.HANDLE,
+            text = profile.handle,
             style = MaterialTheme.typography.labelMedium,
             color = extra.accent,
         )
         Text(
-            text = PortfolioData.FULL_NAME,
+            text = profile.fullName,
             style = MaterialTheme.typography.displayLarge,
             color = scheme.onBackground,
         )
         Text(
-            text = PortfolioData.TITLE,
+            text = profile.title,
             style = MaterialTheme.typography.headlineLarge,
             color = extra.muted,
         )
         Text(
-            text = "I ship production Android systems — not demos. " +
-                "From telecom scale to personal side builds.",
+            text = profile.tagline,
             style = MaterialTheme.typography.bodyLarge,
             color = extra.muted,
         )
         Spacer(modifier = Modifier.height(height = 4.dp))
-        FlowFacts()
+        FlowFacts(profile = profile)
     }
 }
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun FlowFacts() {
+private fun FlowFacts(profile: Profile) {
     FlowRow(
         horizontalArrangement = Arrangement.spacedBy(space = 10.dp),
         verticalArrangement = Arrangement.spacedBy(space = 10.dp),
     ) {
-        PortfolioData.facts.forEach { (value, label) ->
-            FactCell(value = value, label = label)
+        profile.facts.forEach { fact ->
+            FactCell(value = fact.value, label = fact.label)
         }
     }
 }

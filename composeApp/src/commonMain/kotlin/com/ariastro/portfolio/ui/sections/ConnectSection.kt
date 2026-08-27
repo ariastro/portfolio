@@ -18,35 +18,39 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
-import com.ariastro.portfolio.data.PortfolioData
+import com.ariastro.portfolio.domain.model.Profile
 import com.ariastro.portfolio.ui.components.Shell
 import com.ariastro.portfolio.ui.theme.PortfolioTheme
 
+/** Stateless connect section. Links are opened through [onOpenLink] (handled as a store effect). */
 @Composable
-fun ConnectSection(modifier: Modifier = Modifier) {
+fun ConnectSection(
+    profile: Profile,
+    onOpenLink: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val scheme = MaterialTheme.colorScheme
     val extra = PortfolioTheme.extra
-    val uriHandler = LocalUriHandler.current
 
     Shell(
-        modifier = modifier.padding(top = 24.dp, bottom = 64.dp)
+        modifier = modifier.padding(top = 24.dp, bottom = 64.dp),
     ) {
         Panel(
-            title = "connect.sh"
+            title = "connect.sh",
         ) {
             Column(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 Text(
-                    text = "$ ./connect --to \"Ari SWS\"",
+                    text = "$ ./connect --to \"${profile.displayName}\"",
                     style = MaterialTheme.typography.labelLarge,
                     color = extra.accent,
                 )
                 Spacer(modifier = Modifier.height(height = 16.dp))
                 Text(
-                    text = "Open to Android / KMP roles, freelance, collaboration.",
+                    text = profile.availability,
                     style = MaterialTheme.typography.bodyLarge,
                     color = scheme.onBackground,
                 )
@@ -55,17 +59,12 @@ fun ConnectSection(modifier: Modifier = Modifier) {
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(space = 8.dp),
                 ) {
-                    ConnectLine(key = "email", value = PortfolioData.EMAIL) {
-                        uriHandler.openUri("mailto:${PortfolioData.EMAIL}")
-                    }
-                    ConnectLine(key = "github", value = PortfolioData.GITHUB) {
-                        uriHandler.openUri(PortfolioData.GITHUB)
-                    }
-                    ConnectLine(key = "linkedin", value = PortfolioData.LINKEDIN) {
-                        uriHandler.openUri(PortfolioData.LINKEDIN)
-                    }
-                    ConnectLine(key = "upwork", value = PortfolioData.UPWORK) {
-                        uriHandler.openUri(PortfolioData.UPWORK)
+                    profile.links.forEach { link ->
+                        ConnectLine(
+                            key = link.label,
+                            value = link.value,
+                            onClick = { onOpenLink(link.url) },
+                        )
                     }
                 }
                 Spacer(modifier = Modifier.height(height = 28.dp))
@@ -74,7 +73,7 @@ fun ConnectSection(modifier: Modifier = Modifier) {
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
-                        text = "© ${PortfolioData.NAME}",
+                        text = "© ${profile.displayName}",
                         style = MaterialTheme.typography.labelMedium,
                         color = extra.faint,
                     )
@@ -84,7 +83,7 @@ fun ConnectSection(modifier: Modifier = Modifier) {
                         color = extra.faint,
                     )
                     Text(
-                        text = "Made with Kotlin",
+                        text = profile.footerNote,
                         style = MaterialTheme.typography.labelMedium,
                         color = extra.faint,
                     )
@@ -104,7 +103,7 @@ private fun ConnectLine(key: String, value: String, onClick: () -> Unit) {
             .clip(shape = RoundedCornerShape(size = 10.dp))
             .background(color = extra.codeBg)
             .border(width = 1.dp, color = scheme.outline, shape = RoundedCornerShape(size = 10.dp))
-            .clickable(onClick = onClick)
+            .clickable(role = Role.Button, onClick = onClick)
             .padding(horizontal = 14.dp, vertical = 12.dp),
         horizontalArrangement = Arrangement.spacedBy(space = 16.dp),
         verticalAlignment = Alignment.CenterVertically,

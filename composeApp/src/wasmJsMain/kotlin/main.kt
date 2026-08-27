@@ -18,7 +18,7 @@ fun main() {
             if (basePath == "/") "./$clean" else "${basePath.trimEnd('/')}/$clean"
         }
     }
-    ComposeViewport(document.body!!) {
+    ComposeViewport(requireNotNull(document.body)) {
         LaunchedEffect(Unit) {
             // Wait fonts + first layout so user never sees tofu squares
             delay(400)
