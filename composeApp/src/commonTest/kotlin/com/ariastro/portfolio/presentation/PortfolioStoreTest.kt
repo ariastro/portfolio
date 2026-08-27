@@ -6,6 +6,7 @@ import com.ariastro.portfolio.domain.model.LinkType
 import com.ariastro.portfolio.domain.model.Profile
 import com.ariastro.portfolio.domain.model.ProfileLink
 import com.ariastro.portfolio.domain.model.Project
+import com.ariastro.portfolio.domain.model.Screenshot
 import com.ariastro.portfolio.domain.model.Section
 import com.ariastro.portfolio.domain.repository.PortfolioRepository
 import com.ariastro.portfolio.domain.usecase.GetProfileUseCase
@@ -45,7 +46,7 @@ class PortfolioStoreTest {
         assertEquals(2, state.projects.size)
         assertEquals(true, state.isDark)
         assertEquals(0, state.selectedProjectIndex)
-        assertEquals(EditorMode.SPLIT, state.editorMode)
+        assertEquals(EditorMode.DOC, state.editorMode)
         assertNull(state.activeSection)
         assertEquals(0f, state.scrollProgress)
         assertEquals(state.projects.first(), state.selectedProject)
@@ -148,6 +149,31 @@ class PortfolioStoreTest {
     }
 
     @Test
+    fun activeSectionSnapsToLastSectionShortOfExactBottom() {
+        val store = createStore()
+        // CONNECT starts below the furthest reachable scroll position, so the normal
+        // "top passed the active line" rule can never select it — only the bottom rule can.
+        store.dispatch(PortfolioIntent.SectionPositionChanged(Section.BUILDS, y = 800))
+        store.dispatch(PortfolioIntent.SectionPositionChanged(Section.CONNECT, y = 2200))
+
+        // 30px short of max: outside the old 10px window, inside the proportional one.
+        store.dispatch(PortfolioIntent.ViewportChanged(position = 1970, max = 2000))
+
+        assertEquals(Section.CONNECT, store.state.value.activeSection)
+    }
+
+    @Test
+    fun activeSectionIgnoresBottomRuleWhileMidPage() {
+        val store = createStore()
+        store.dispatch(PortfolioIntent.SectionPositionChanged(Section.README, y = 200))
+        store.dispatch(PortfolioIntent.SectionPositionChanged(Section.CONNECT, y = 2200))
+
+        store.dispatch(PortfolioIntent.ViewportChanged(position = 400, max = 2000))
+
+        assertEquals(Section.README, store.state.value.activeSection)
+    }
+
+    @Test
     fun navigateToSectionEmitsScrollToEffectWithOffset() = runTest {
         val store = createStore()
         store.dispatch(PortfolioIntent.SectionPositionChanged(Section.BUILDS, y = 800))
@@ -219,7 +245,7 @@ class PortfolioStoreTest {
                 linkType = LinkType.PLAY_STORE,
                 stack = listOf("Kotlin"),
                 brand = Brand.MY_XL,
-                screenshotIds = listOf("alpha_1"),
+                screenshots = listOf(Screenshot("alpha_1", "alpha screen")),
             ),
             Project(
                 id = "beta",
@@ -235,7 +261,7 @@ class PortfolioStoreTest {
                 linkType = LinkType.NONE,
                 stack = listOf("Kotlin"),
                 brand = Brand.TRACK_FIT,
-                screenshotIds = listOf("beta_1"),
+                screenshots = listOf(Screenshot("beta_1", "beta screen")),
             ),
         )
     }

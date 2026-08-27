@@ -14,6 +14,12 @@ sealed interface PortfolioIntent {
     /** Change the IDE editor view mode. */
     data class ChangeEditorMode(val mode: EditorMode) : PortfolioIntent
 
+    /** Open a project screenshot full-screen, by asset id. */
+    data class OpenScreenshot(val assetId: String) : PortfolioIntent
+
+    /** Dismiss the full-screen screenshot overlay. */
+    data object CloseScreenshot : PortfolioIntent
+
     /** Navigate (scroll) to a page section. */
     data class NavigateToSection(val section: Section) : PortfolioIntent
 

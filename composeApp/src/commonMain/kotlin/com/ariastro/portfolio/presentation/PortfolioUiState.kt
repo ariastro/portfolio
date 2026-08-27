@@ -13,9 +13,11 @@ data class PortfolioUiState(
     val projects: List<Project>,
     val isDark: Boolean = true,
     val selectedProjectIndex: Int = 0,
-    // Split by default: visitors see the doc AND the screenshots immediately on wide screens.
-    // Narrow layouts fall back to Code automatically (see BuildsSection).
-    val editorMode: EditorMode = EditorMode.SPLIT,
+    // Doc by default: on wide screens that reads as doc + screenshots side by side, which is
+    // the most informative first impression of a project.
+    val editorMode: EditorMode = EditorMode.DOC,
+    // Asset id of the screenshot opened full-screen, or null when the overlay is closed.
+    val expandedScreenshotId: String? = null,
     // Collapsed by default: only the recent roles show until the visitor asks for the full log.
     val showAllExperience: Boolean = false,
     val activeSection: Section? = null,

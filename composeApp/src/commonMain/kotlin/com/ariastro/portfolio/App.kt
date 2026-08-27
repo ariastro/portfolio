@@ -33,6 +33,7 @@ import com.ariastro.portfolio.presentation.PortfolioEffect
 import com.ariastro.portfolio.presentation.PortfolioIntent
 import com.ariastro.portfolio.presentation.PortfolioStore
 import com.ariastro.portfolio.ui.components.BackgroundPattern
+import com.ariastro.portfolio.ui.components.ScreenshotOverlay
 import com.ariastro.portfolio.ui.sections.ConnectSection
 import com.ariastro.portfolio.ui.sections.ExperienceSection
 import com.ariastro.portfolio.ui.sections.HeroSection
@@ -40,6 +41,7 @@ import com.ariastro.portfolio.ui.sections.ReadmeSection
 import com.ariastro.portfolio.ui.sections.TopBar
 import com.ariastro.portfolio.ui.sections.builds.BuildsSection
 import com.ariastro.portfolio.ui.theme.PortfolioTheme
+import com.ariastro.portfolio.ui.theme.accentColor
 import kotlin.math.roundToInt
 import kotlinx.coroutines.flow.collectLatest
 
@@ -125,12 +127,28 @@ fun App() {
                         onSelectProject = { store.dispatch(PortfolioIntent.SelectProject(it)) },
                         onEditorModeChange = { store.dispatch(PortfolioIntent.ChangeEditorMode(it)) },
                         onOpenLink = { store.dispatch(PortfolioIntent.OpenLink(it)) },
+                        onOpenScreenshot = { store.dispatch(PortfolioIntent.OpenScreenshot(it)) },
                     )
                 }
                 SectionAnchor(section = Section.CONNECT, store = store) {
                     ConnectSection(
                         profile = state.profile,
                         onOpenLink = { store.dispatch(PortfolioIntent.OpenLink(it)) },
+                    )
+                }
+            }
+
+            val expanded = state.expandedScreenshotId
+            val expandedProject = state.selectedProject
+            if (expanded != null && expandedProject != null) {
+                val shot = expandedProject.screenshots.firstOrNull { it.assetId == expanded }
+                if (shot != null) {
+                    ScreenshotOverlay(
+                        screenshot = shot,
+                        projectTitle = expandedProject.title,
+                        accent = expandedProject.brand.accentColor,
+                        onDismiss = { store.dispatch(PortfolioIntent.CloseScreenshot) },
+                        modifier = Modifier.fillMaxSize(),
                     )
                 }
             }

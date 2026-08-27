@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -26,6 +27,9 @@ import com.ariastro.portfolio.ui.components.ThemeToggle
 import com.ariastro.portfolio.ui.components.TrafficLights
 import com.ariastro.portfolio.ui.theme.PortfolioTheme
 
+/** Height of the scroll-progress track along the top edge of the bar. */
+private val PROGRESS_HEIGHT = 2.dp
+
 /** Stateless top bar. All state comes in as parameters, all events go out as callbacks. */
 @Composable
 fun TopBar(
@@ -44,13 +48,21 @@ fun TopBar(
             .fillMaxWidth()
             .background(color = scheme.background),
     ) {
-        if (progress > 0f) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth(fraction = progress)
-                    .height(height = 2.dp)
-                    .background(color = extra.accent),
-            )
+        // The track is always laid out, even at progress 0. Rendering it conditionally used to
+        // add 2.dp to the bar the instant scrolling began, nudging the whole bar down and back.
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(height = PROGRESS_HEIGHT),
+        ) {
+            if (progress > 0f) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(fraction = progress)
+                        .fillMaxHeight()
+                        .background(color = extra.accent),
+                )
+            }
         }
         Shell {
             Row(

@@ -128,6 +128,6 @@ class BuildsContentTest {
         linkType = LinkType.NONE,
         stack = listOf("Kotlin"),
         brand = Brand.MY_XL,
-        screenshotIds = emptyList(),
+        screenshots = emptyList(),
     )
 }

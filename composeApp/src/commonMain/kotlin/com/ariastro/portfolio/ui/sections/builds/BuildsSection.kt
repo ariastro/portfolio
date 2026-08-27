@@ -41,6 +41,7 @@ fun BuildsSection(
     onSelectProject: (Int) -> Unit,
     onEditorModeChange: (EditorMode) -> Unit,
     onOpenLink: (String) -> Unit,
+    onOpenScreenshot: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val scheme = MaterialTheme.colorScheme
@@ -55,11 +56,6 @@ fun BuildsSection(
             val compact = maxWidth < 480.dp
             // A taller cage means the story needs inner-scrolling less often.
             val workspaceHeight = if (compact) 540.dp else 660.dp
-            // Split mode needs the wide layout; on narrow screens fall back to Design so the
-            // screenshots (the highest-value content) are visible immediately.
-            val effectiveMode =
-                if (!wide && editorMode == EditorMode.SPLIT) EditorMode.DESIGN else editorMode
-
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -68,10 +64,9 @@ fun BuildsSection(
                     .border(width = 1.dp, color = scheme.outline, shape = RoundedCornerShape(size = 14.dp)),
             ) {
                 IdeHeader(
-                    editorMode = effectiveMode,
+                    editorMode = editorMode,
                     onModeChange = onEditorModeChange,
                     compact = compact,
-                    showSplit = wide,
                 )
 
                 Divider()
@@ -96,8 +91,10 @@ fun BuildsSection(
 
                         EditorArea(
                             project = project,
-                            editorMode = effectiveMode,
+                            editorMode = editorMode,
                             compact = false,
+                            designAlongside = true,
+                            onOpenScreenshot = onOpenScreenshot,
                             modifier = Modifier
                                 .weight(weight = 1f)
                                 .fillMaxHeight(),
@@ -118,8 +115,10 @@ fun BuildsSection(
 
                         EditorArea(
                             project = project,
-                            editorMode = effectiveMode,
+                            editorMode = editorMode,
                             compact = compact,
+                            designAlongside = false,
+                            onOpenScreenshot = onOpenScreenshot,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(height = workspaceHeight),

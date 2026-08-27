@@ -6,7 +6,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import com.ariastro.portfolio.resources.JetBrainsMono_Bold
 import com.ariastro.portfolio.resources.JetBrainsMono_Medium
 import com.ariastro.portfolio.resources.JetBrainsMono_Regular
 import com.ariastro.portfolio.resources.Res
@@ -23,12 +22,17 @@ fun displayFamily(): FontFamily = FontFamily(
     Font(Res.font.SpaceGrotesk_Bold, FontWeight.SemiBold),
 )
 
+/**
+ * Mono family. Deliberately two files, not three: the bold weight was 271KB of transfer for
+ * two on-screen uses (Kotlin keywords and the Run button), so Medium now serves Bold and
+ * SemiBold as well.
+ */
 @Composable
 fun monoFamily(): FontFamily = FontFamily(
     Font(Res.font.JetBrainsMono_Regular, FontWeight.Normal),
     Font(Res.font.JetBrainsMono_Medium, FontWeight.Medium),
-    Font(Res.font.JetBrainsMono_Bold, FontWeight.Bold),
     Font(Res.font.JetBrainsMono_Medium, FontWeight.SemiBold),
+    Font(Res.font.JetBrainsMono_Medium, FontWeight.Bold),
 )
 
 @Composable

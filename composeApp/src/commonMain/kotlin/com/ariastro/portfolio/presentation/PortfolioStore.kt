@@ -47,13 +47,20 @@ class PortfolioStore(
 
             is PortfolioIntent.SelectProject -> _state.update { current ->
                 if (intent.index in current.projects.indices) {
-                    current.copy(selectedProjectIndex = intent.index)
+                    // Drop any open overlay: its screenshot belongs to the previous project.
+                    current.copy(selectedProjectIndex = intent.index, expandedScreenshotId = null)
                 } else {
                     current
                 }
             }
 
             is PortfolioIntent.ChangeEditorMode -> _state.update { it.copy(editorMode = intent.mode) }
+
+            is PortfolioIntent.OpenScreenshot ->
+                _state.update { it.copy(expandedScreenshotId = intent.assetId) }
+
+            is PortfolioIntent.CloseScreenshot ->
+                _state.update { it.copy(expandedScreenshotId = null) }
 
             is PortfolioIntent.ToggleAllExperience ->
                 _state.update { it.copy(showAllExperience = !it.showAllExperience) }
@@ -85,9 +92,8 @@ class PortfolioStore(
 
     private fun updateActiveSection() {
         val activeSection =
-            if (lastScrollMax > 0 && lastScrollPosition >= lastScrollMax - BOTTOM_SNAP_THRESHOLD) {
-                // Snap to the last section when the viewport reached the bottom.
-                Section.CONNECT
+            if (isAtBottom()) {
+                lastSectionByPosition()
             } else {
                 sectionPositions.entries
                     .filter { it.value - ACTIVE_SECTION_OFFSET <= lastScrollPosition }
@@ -96,6 +102,29 @@ class PortfolioStore(
             }
         _state.update { it.copy(activeSection = activeSection) }
     }
+
+    /**
+     * Whether the viewport has effectively reached the end of the content.
+     *
+     * The tolerance is proportional to the scroll range rather than a fixed pixel count:
+     * browsers settle on fractional scroll offsets and can come to rest a few pixels short of
+     * max, which an absolute window of a few pixels misses outright — leaving the final section
+     * permanently un-highlighted on exactly the page position where it fills the screen.
+     */
+    private fun isAtBottom(): Boolean {
+        if (lastScrollMax <= 0) return false
+        val tolerance = (lastScrollMax * BOTTOM_SNAP_FRACTION)
+            .toInt()
+            .coerceAtLeast(minimumValue = BOTTOM_SNAP_MIN_PX)
+        return lastScrollPosition >= lastScrollMax - tolerance
+    }
+
+    /**
+     * The section furthest down the page, derived from measured positions rather than named
+     * outright, so reordering [Section] cannot leave this pointing at the wrong one.
+     */
+    private fun lastSectionByPosition(): Section? =
+        sectionPositions.maxByOrNull { it.value }?.key
 
     private fun updateScrollProgress() {
         val progress =
@@ -118,7 +147,10 @@ class PortfolioStore(
         /** How far below the top edge a section counts as "active". */
         const val ACTIVE_SECTION_OFFSET = 150
 
-        /** Distance from the bottom at which the last section becomes active. */
-        const val BOTTOM_SNAP_THRESHOLD = 10
+        /** Share of the scroll range treated as "at the bottom". */
+        const val BOTTOM_SNAP_FRACTION = 0.02f
+
+        /** Floor for the bottom tolerance, so short pages still have a usable window. */
+        const val BOTTOM_SNAP_MIN_PX = 24
     }
 }

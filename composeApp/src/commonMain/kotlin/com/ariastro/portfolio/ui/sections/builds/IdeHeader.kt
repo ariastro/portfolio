@@ -26,18 +26,17 @@ import com.ariastro.portfolio.ui.components.TrafficLights
 import com.ariastro.portfolio.ui.components.rememberHover
 import com.ariastro.portfolio.ui.theme.PortfolioTheme
 
-/** IDE window chrome: traffic lights, title and the Code/Split/Design mode switcher. */
+/** IDE window chrome: traffic lights, title and the Doc/Code/Design switcher. */
 @Composable
 internal fun IdeHeader(
     editorMode: EditorMode,
     onModeChange: (EditorMode) -> Unit,
     compact: Boolean,
-    showSplit: Boolean,
     modifier: Modifier = Modifier,
 ) {
     val scheme = MaterialTheme.colorScheme
     val extra = PortfolioTheme.extra
-    val modes = EditorMode.entries.filter { it != EditorMode.SPLIT || showSplit }
+    val modes = EditorMode.entries
 
     @Composable
     fun ModeSwitcher() {

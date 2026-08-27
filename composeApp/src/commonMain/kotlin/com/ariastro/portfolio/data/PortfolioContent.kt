@@ -7,6 +7,7 @@ import com.ariastro.portfolio.domain.model.LinkType
 import com.ariastro.portfolio.domain.model.Profile
 import com.ariastro.portfolio.domain.model.ProfileLink
 import com.ariastro.portfolio.domain.model.Project
+import com.ariastro.portfolio.domain.model.Screenshot
 
 /**
  * Static portfolio content — the single source of truth for copy and project data.
@@ -220,7 +221,10 @@ internal object PortfolioContent {
                 "Google Maps", "Modularization", "Clean Architecture",
             ),
             brand = Brand.MY_XL,
-            screenshotIds = listOf("myxl_1", "myxl_2"),
+            screenshots = listOf(
+                Screenshot("myxl_1", "5G package upgrade offer"),
+                Screenshot("myxl_2", "Dashboard — balance, quota and quick actions"),
+            ),
         ),
         Project(
             id = "schoolryde",
@@ -246,7 +250,12 @@ internal object PortfolioContent {
                 "Stripe", "Room", "Firebase", "DataStore",
             ),
             brand = Brand.SCHOOL_RYDE,
-            screenshotIds = listOf("schoolryde_1", "schoolryde_2", "schoolryde_3", "schoolryde_4"),
+            screenshots = listOf(
+                Screenshot("schoolryde_1", "Repeating ride schedule builder"),
+                Screenshot("schoolryde_2", "Scheduled rides for the family"),
+                Screenshot("schoolryde_3", "Ride in progress with map preview"),
+                Screenshot("schoolryde_4", "Live tracking with route and ETA"),
+            ),
         ),
         Project(
             id = "tagtag",
@@ -272,7 +281,11 @@ internal object PortfolioContent {
                 "Firebase", "Crashlytics", "Payment Gateway",
             ),
             brand = Brand.TAG_TAG,
-            screenshotIds = listOf("tagtag_1", "tagtag_2", "tagtag_3"),
+            screenshots = listOf(
+                Screenshot("tagtag_1", "Missions and the weekly prize pool"),
+                Screenshot("tagtag_2", "Prize wheel"),
+                Screenshot("tagtag_3", "In-game mission with a score target"),
+            ),
         ),
         Project(
             id = "superagree",
@@ -298,7 +311,10 @@ internal object PortfolioContent {
                 "DataStore", "Dynamic Features", "Firebase",
             ),
             brand = Brand.SUPER_AGREE,
-            screenshotIds = listOf("superagree_1", "superagree_2"),
+            screenshots = listOf(
+                Screenshot("superagree_1", "Cultivation categories and partnerships"),
+                Screenshot("superagree_2", "Daily cultivation activity tracking"),
+            ),
         ),
         Project(
             id = "trackfit",
@@ -324,7 +340,11 @@ internal object PortfolioContent {
                 "Firebase", "Moshi", "Custom Calendar",
             ),
             brand = Brand.TRACK_FIT,
-            screenshotIds = listOf("trackfit_1", "trackfit_2", "trackfit_3"),
+            screenshots = listOf(
+                Screenshot("trackfit_1", "PT schedule and daily progress"),
+                Screenshot("trackfit_2", "Monthly training calendar"),
+                Screenshot("trackfit_3", "Progress report and body stats"),
+            ),
         ),
     )
 }

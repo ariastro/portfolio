@@ -3,7 +3,7 @@ package com.ariastro.portfolio.domain.model
 /**
  * A shipped project. Intentionally framework free:
  * - accent color is referenced by [Brand], resolved to a concrete color in the UI layer
- * - screenshots are referenced by asset id, resolved to drawable resources in the UI layer
+ * - screenshots carry an asset id, resolved to drawable resources in the UI layer
  */
 data class Project(
     val id: String,
@@ -19,7 +19,7 @@ data class Project(
     val linkType: LinkType,
     val stack: List<String>,
     val brand: Brand,
-    val screenshotIds: List<String>,
+    val screenshots: List<Screenshot>,
     val status: String = DEFAULT_STATUS,
 ) {
     companion object {
